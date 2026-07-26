@@ -1,0 +1,9 @@
+/target
+
+.env.keys
+.env.local
+.env.*.local
+.env.stag
+.env.staging
+.env.prod
+.env.production
