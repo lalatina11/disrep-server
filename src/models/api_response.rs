@@ -12,7 +12,7 @@ impl<T: Serialize> ApiResponse<T> {
     pub fn error(message: Option<String>, status: Option<StatusCode>) -> impl IntoResponse {
         (
             status.unwrap_or_else(|| StatusCode::INTERNAL_SERVER_ERROR),
-            Json::<ApiResponse<bool>>(ApiResponse {
+            Json::<ApiResponse<bool>>(ApiResponse::<bool> {
                 success: false,
                 message: message.unwrap_or_else(|| StatusCode::INTERNAL_SERVER_ERROR.to_string()),
                 data: None,

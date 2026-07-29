@@ -4,6 +4,7 @@ use crate::{config::AppConfig, routes::AppRoutes};
 
 pub mod config;
 pub mod handlers;
+pub mod middleware;
 pub mod models;
 pub mod routes;
 
@@ -15,9 +16,10 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .unwrap_or_else(|_| panic!("Failed to create tokio listener"));
+    let mode = config.server.env.to_string().to_uppercase();
     println!(
-        "Server Listening on http://{}:{}",
-        config.server.host, config.server.port
+        "[{} MODE] | Server Listening on http://{}:{}",
+        mode, config.server.host, config.server.port
     );
     axum::serve::serve(listener, app)
         .await
