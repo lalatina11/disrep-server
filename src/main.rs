@@ -3,10 +3,13 @@ use core::panic;
 use crate::{config::AppConfig, routes::AppRoutes};
 
 pub mod config;
+pub mod error;
 pub mod handlers;
 pub mod middleware;
 pub mod models;
 pub mod routes;
+pub mod service;
+pub mod utils;
 
 #[tokio::main]
 async fn main() {

@@ -1,6 +1,6 @@
 use axum::{extract::Request, http::StatusCode, middleware::Next, response::IntoResponse};
 
-use crate::models::api_response::ApiResponse;
+use crate::utils::responses::api_responses::ApiResponse;
 
 pub struct ErrorMiddleware;
 

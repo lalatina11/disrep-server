@@ -1,0 +1,53 @@
+use reqwest::{Client, StatusCode};
+use tracing::error;
+
+use crate::{
+    config::supabase_config::SupabaseConfig,
+    error::AuthError,
+    models::auth_model::SignUpPayload,
+    utils::responses::auth_responses::{SignUpAndInSuccessResponse, SignUpErrorResponse},
+};
+
+pub struct AuthService;
+
+impl AuthService {
+    pub async fn sign_up(payload: SignUpPayload) -> Result<SignUpAndInSuccessResponse, AuthError> {
+        let supabase_config = SupabaseConfig::new();
+        let fetch = Client::new();
+        let url = format!("{}/auth/v1/signup", supabase_config.project_url);
+        let res = fetch
+            .post(url)
+            .header("Content-Type", "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|err| {
+                println!("Response error");
+                error!("Supabase request failed: {}", err);
+                AuthError::internal()
+            })?
+            .text()
+            .await
+            .map_err(|err| {
+                println!("Parsing text error");
+                error!("Failed to read Supabase response: {}", err);
+                AuthError::internal()
+            })?;
+
+        if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
+            return Ok(data);
+        }
+
+        if let Ok(err) = serde_json::from_str::<SignUpErrorResponse>(&res) {
+            return Err(AuthError {
+                message: err.msg,
+                status: StatusCode::from_u16(err.code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            });
+        }
+
+        println!("Ghoib text error");
+        error!("Unexpected Supabase response: {}", res);
+        Err(AuthError::internal())
+    }
+}
