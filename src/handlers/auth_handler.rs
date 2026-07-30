@@ -1,12 +1,15 @@
-use axum::{Json, http::HeaderMap};
+use axum::http::HeaderMap;
 use reqwest::StatusCode;
 
 use crate::{
     models::auth_model::SignUpPayload,
     service::auth_service::AuthService,
-    utils::responses::{
-        api_responses::{ApiResponse, ApiResponseReturnType},
-        auth_responses::SignUpAndInSuccessResponse,
+    utils::{
+        request::json_parser::JsonParser,
+        responses::{
+            api_responses::{ApiResponse, ApiResponseReturnType},
+            auth_responses::SignUpAndInSuccessResponse,
+        },
     },
 };
 
@@ -14,7 +17,7 @@ pub struct AuthHandler;
 
 impl AuthHandler {
     pub async fn sign_up(
-        Json(payload): Json<SignUpPayload>,
+        JsonParser(payload): JsonParser<SignUpPayload>,
     ) -> ApiResponseReturnType<SignUpAndInSuccessResponse> {
         let service = AuthService::sign_up(payload).await;
         match service {
