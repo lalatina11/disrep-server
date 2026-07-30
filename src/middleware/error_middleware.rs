@@ -1,13 +1,19 @@
 use axum::{extract::Request, http::StatusCode, middleware::Next, response::IntoResponse};
 
-use crate::utils::responses::api_responses::ApiResponse;
+use crate::utils::responses::api_responses::{ApiResponse, HANDLED_HEADER};
 
 pub struct ErrorMiddleware;
 
 impl ErrorMiddleware {
     pub async fn generic_error(req: Request, next: Next) -> impl IntoResponse {
-        let response = next.run(req).await;
+        let mut response = next.run(req).await;
         let status = response.status();
+
+        if response.headers().contains_key(HANDLED_HEADER) {
+            response.headers_mut().remove(HANDLED_HEADER);
+            return response;
+        }
+
         match status {
             StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => response.into_response(),
             StatusCode::METHOD_NOT_ALLOWED => {

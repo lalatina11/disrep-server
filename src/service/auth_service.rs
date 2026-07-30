@@ -25,14 +25,12 @@ impl AuthService {
             .await
             .map_err(|err| {
                 println!("Response error");
-                error!("Supabase request failed: {}", err);
                 AuthError::internal()
             })?
             .text()
             .await
             .map_err(|err| {
                 println!("Parsing text error");
-                error!("Failed to read Supabase response: {}", err);
                 AuthError::internal()
             })?;
 

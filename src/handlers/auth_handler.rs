@@ -7,7 +7,7 @@ use crate::{
     utils::{
         request::json_parser::JsonParser,
         responses::{
-            api_responses::{ApiResponse, ApiResponseReturnType},
+            api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
             auth_responses::SignUpAndInSuccessResponse,
         },
     },
@@ -18,24 +18,18 @@ pub struct AuthHandler;
 impl AuthHandler {
     pub async fn sign_up(
         JsonParser(payload): JsonParser<SignUpPayload>,
-    ) -> ApiResponseReturnType<SignUpAndInSuccessResponse> {
+    ) -> ApiResponseReturnTypeWithHeader<SignUpAndInSuccessResponse> {
         let service = AuthService::sign_up(payload).await;
         match service {
-            Err(err) => {
-                println!("Error in handler {:?}", err);
-                ApiResponse::error(
-                    Some(err.message.to_string()),
-                    Some(
-                        StatusCode::from_u16(err.status)
-                            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                    ),
-                )
-            }
+            Err(err) => ApiResponse::error(
+                Some(err.message.to_string()),
+                Some(StatusCode::from_u16(err.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
+            ),
             Ok(data) => ApiResponse::success(Some(data), None, Some(StatusCode::CREATED)),
         }
     }
 
-    pub async fn get_user(headers: HeaderMap) -> ApiResponseReturnType<String> {
+    pub async fn get_user(headers: HeaderMap) -> ApiResponseReturnTypeWithHeader<String> {
         let service = AuthService::get_user(&headers).await;
         match service {
             Err(err) => ApiResponse::error(

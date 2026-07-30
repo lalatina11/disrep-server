@@ -1,7 +1,7 @@
 use axum::{Router, middleware::from_fn};
 
 use crate::{
-    middleware::logger_middleware::LoggerMiddleware,
+    middleware::{error_middleware::ErrorMiddleware, logger_middleware::LoggerMiddleware},
     routes::{api_routes::ApiRoutes, root_routes::RootRoutes},
 };
 
@@ -16,6 +16,6 @@ impl AppRoutes {
             .merge(RootRoutes::setup())
             .nest("/api", ApiRoutes::setup())
             .layer(from_fn(LoggerMiddleware::handler))
-        // .layer(from_fn(ErrorMiddleware::generic_error))
+            .layer(from_fn(ErrorMiddleware::generic_error))
     }
 }
