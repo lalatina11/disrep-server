@@ -23,13 +23,13 @@ impl AuthService {
             .json(&payload)
             .send()
             .await
-            .map_err(|err| {
+            .map_err(|_| {
                 println!("Response error");
                 AuthError::internal()
             })?
             .text()
             .await
-            .map_err(|err| {
+            .map_err(|_| {
                 println!("Parsing text error");
                 AuthError::internal()
             })?;
