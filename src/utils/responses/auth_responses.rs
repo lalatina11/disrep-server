@@ -65,7 +65,7 @@ pub struct IdentityData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SignUpAndInErrorResponse {
+pub struct SupabaseAuthErrorResponse {
     pub code: u16,
     pub error_code: String,
     pub msg: String,

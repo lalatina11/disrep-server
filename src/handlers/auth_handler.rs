@@ -8,7 +8,7 @@ use crate::{
         request::json_parser::JsonParser,
         responses::{
             api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
-            auth_responses::SignUpAndInSuccessResponse,
+            auth_responses::{GetUserSuccessResponse, SignUpAndInSuccessResponse},
         },
     },
 };
@@ -42,14 +42,16 @@ impl AuthHandler {
         }
     }
 
-    pub async fn get_user(headers: HeaderMap) -> ApiResponseReturnTypeWithHeader<String> {
+    pub async fn get_user(
+        headers: HeaderMap,
+    ) -> ApiResponseReturnTypeWithHeader<GetUserSuccessResponse> {
         let service = AuthService::get_user(&headers).await;
         match service {
             Err(err) => ApiResponse::error(
                 Some(err.message),
                 Some(StatusCode::from_u16(err.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
             ),
-            Ok(token) => ApiResponse::success(Some(token), None, Some(StatusCode::OK)),
+            Ok(data) => ApiResponse::success(Some(data), None, Some(StatusCode::OK)),
         }
     }
 }

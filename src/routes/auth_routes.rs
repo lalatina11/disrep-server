@@ -12,7 +12,7 @@ impl AuthRoutes {
         Router::new()
             .route("/sign-up", post(AuthHandler::sign_up))
             .route("/sign-in", post(AuthHandler::sign_in))
-            .nest("/protected", ProtectedAuthRoutes::setup())
+            .merge(ProtectedAuthRoutes::setup())
     }
 }
 
@@ -20,6 +20,6 @@ struct ProtectedAuthRoutes;
 
 impl ProtectedAuthRoutes {
     fn setup() -> Router {
-        Router::new().route("/get-user", get(AuthHandler::get_user))
+        Router::new().route("/me", get(AuthHandler::get_user))
     }
 }
