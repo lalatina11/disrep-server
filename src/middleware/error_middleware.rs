@@ -10,11 +10,18 @@ impl ErrorMiddleware {
         let status = response.status();
         match status {
             StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => response.into_response(),
-            StatusCode::NOT_FOUND => ApiResponse::<bool>::error(
-                Some(StatusCode::NOT_FOUND.to_string()),
-                Some(StatusCode::NOT_FOUND),
-            )
-            .into_response(),
+            StatusCode::METHOD_NOT_ALLOWED => {
+                let status = StatusCode::METHOD_NOT_ALLOWED;
+                ApiResponse::<bool>::error(Some(status.to_string()), Some(status)).into_response()
+            }
+            StatusCode::NOT_FOUND => {
+                let status = StatusCode::NOT_FOUND;
+                ApiResponse::<bool>::error(Some(status.to_string()), Some(status)).into_response()
+            }
+            StatusCode::UNAUTHORIZED => {
+                let status = StatusCode::UNAUTHORIZED;
+                ApiResponse::<bool>::error(Some(status.to_string()), Some(status)).into_response()
+            }
             _other => ApiResponse::<bool>::error(None, Some(status)).into_response(),
         }
     }
