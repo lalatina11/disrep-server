@@ -1,12 +1,12 @@
 use axum::http::{HeaderMap, header as HeaderType};
-use reqwest::{Client, StatusCode};
+use reqwest::Client;
 use tracing::error;
 
 use crate::{
     config::supabase_config::SupabaseConfig,
     error::AuthError,
-    models::auth_model::SignUpPayload,
-    utils::responses::auth_responses::{SignUpAndInSuccessResponse, SignUpErrorResponse},
+    models::auth_model::{SignInPayload, SignUpPayload},
+    utils::responses::auth_responses::{SignUpAndInErrorResponse, SignUpAndInSuccessResponse},
 };
 
 pub struct AuthService;
@@ -40,17 +40,18 @@ impl AuthService {
             return Ok(data);
         }
 
-        if let Ok(err) = serde_json::from_str::<SignUpErrorResponse>(&res) {
+        if let Ok(err) = serde_json::from_str::<SignUpAndInErrorResponse>(&res) {
             return Err(AuthError {
                 message: err.msg,
-                status: StatusCode::from_u16(err.code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                status: err.code,
             });
         }
 
-        println!("Ghoib text error");
         error!("Unexpected Supabase response: {}", res);
         Err(AuthError::internal())
     }
+
+    pub async fn sign_in(payload: SignInPayload) {}
 
     pub async fn get_user(headers: &HeaderMap) -> Result<String, AuthError> {
         let token = headers

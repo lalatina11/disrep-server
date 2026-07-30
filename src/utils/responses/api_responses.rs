@@ -27,11 +27,13 @@ impl<T: Serialize> ApiResponse<T> {
         )
     }
     pub fn error(message: Option<String>, status: Option<StatusCode>) -> ApiResponseReturnType<T> {
+        let status = status.unwrap_or_else(|| StatusCode::INTERNAL_SERVER_ERROR);
+        let message = message.unwrap_or(status.to_string());
         (
-            status.unwrap_or_else(|| StatusCode::INTERNAL_SERVER_ERROR),
+            status,
             Json(ApiResponse {
                 success: false,
-                message: message.unwrap_or_else(|| StatusCode::INTERNAL_SERVER_ERROR.to_string()),
+                message,
                 data: None,
             }),
         )

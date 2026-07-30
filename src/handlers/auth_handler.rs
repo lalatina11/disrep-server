@@ -21,7 +21,16 @@ impl AuthHandler {
     ) -> ApiResponseReturnType<SignUpAndInSuccessResponse> {
         let service = AuthService::sign_up(payload).await;
         match service {
-            Err(err) => ApiResponse::error(Some(err.message), Some(err.status)),
+            Err(err) => {
+                println!("Error in handler {:?}", err);
+                ApiResponse::error(
+                    Some(err.message.to_string()),
+                    Some(
+                        StatusCode::from_u16(err.status)
+                            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                    ),
+                )
+            }
             Ok(data) => ApiResponse::success(Some(data), None, Some(StatusCode::CREATED)),
         }
     }
@@ -29,7 +38,10 @@ impl AuthHandler {
     pub async fn get_user(headers: HeaderMap) -> ApiResponseReturnType<String> {
         let service = AuthService::get_user(&headers).await;
         match service {
-            Err(err) => ApiResponse::error(Some(err.message), Some(err.status)),
+            Err(err) => ApiResponse::error(
+                Some(err.message),
+                Some(StatusCode::from_u16(err.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
+            ),
             Ok(token) => ApiResponse::success(Some(token), None, Some(StatusCode::OK)),
         }
     }

@@ -9,6 +9,7 @@ pub mod middleware;
 pub mod models;
 pub mod routes;
 pub mod service;
+pub mod traits;
 pub mod utils;
 
 #[tokio::main]
