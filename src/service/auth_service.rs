@@ -14,11 +14,12 @@ pub struct AuthService;
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<SignUpAndInSuccessResponse, AuthError> {
         let supabase_config = SupabaseConfig::new();
+
         let fetch = Client::new();
         let url = format!("{}/auth/v1/signup", supabase_config.project_url);
         let res = fetch
             .post(url)
-            .header("Content-Type", "application/json")
+            .header(HeaderType::CONTENT_TYPE, "application/json")
             .header("apikey", supabase_config.publishable_key)
             .json(&payload)
             .send()
@@ -49,7 +50,44 @@ impl AuthService {
         Err(AuthError::internal())
     }
 
-    pub async fn sign_in(payload: SignInPayload) {}
+    pub async fn sign_in(payload: SignInPayload) -> Result<SignUpAndInSuccessResponse, AuthError> {
+        let supabase_config = SupabaseConfig::new();
+        let fetch = Client::new();
+        let url = format!(
+            "{}/auth/v1/token?grant_type=password",
+            supabase_config.project_url
+        );
+        let res = fetch
+            .post(url)
+            .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|_| {
+                println!("Response error");
+                AuthError::internal()
+            })?
+            .text()
+            .await
+            .map_err(|_| {
+                println!("Parsing text error");
+                AuthError::internal()
+            })?;
+
+        if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
+            return Ok(data);
+        }
+
+        if let Ok(data) = serde_json::from_str::<SignUpAndInErrorResponse>(&res) {
+            return Err(AuthError {
+                message: data.msg,
+                status: data.code,
+            });
+        }
+
+        Err(AuthError::internal())
+    }
 
     pub async fn get_user(headers: &HeaderMap) -> Result<String, AuthError> {
         let token = headers

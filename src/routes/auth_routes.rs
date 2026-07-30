@@ -11,6 +11,7 @@ impl AuthRoutes {
     pub fn setup() -> Router {
         Router::new()
             .route("/sign-up", post(AuthHandler::sign_up))
+            .route("/sign-in", post(AuthHandler::sign_in))
             .nest("/protected", ProtectedAuthRoutes::setup())
     }
 }

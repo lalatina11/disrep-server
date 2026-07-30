@@ -1,36 +1,25 @@
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
-use crate::traits::can_validate::CanValidate;
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct SignUpUserName {
+    #[validate(length(min = 3, max = 128))]
     display_name: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct SignUpPayload {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 8, max = 32))]
     pub password: String,
     pub data: SignUpUserName,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct SignInPayload {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 8, max = 32))]
     pub password: String,
-}
-
-impl CanValidate for SignUpPayload {
-    fn validate(self) -> Result<Self, String> {
-        if self.email == "" {
-            return Err("email is required".to_string());
-        }
-        if self.email.trim() == "" {
-            return Err("email is required".to_string());
-        }
-        if self.password.trim() == "" {
-            return Err("email is required".to_string());
-        }
-        Ok(self)
-    }
 }
