@@ -2,12 +2,12 @@ use axum::{Router, middleware::from_fn};
 
 use crate::{
     middleware::{error_middleware::ErrorMiddleware, logger_middleware::LoggerMiddleware},
-    routes::{api::ApiRoutes, root::RootRoutes},
+    routes::{api_routes::ApiRoutes, root_routes::RootRoutes},
 };
 
-mod api;
-mod auth;
-mod root;
+mod api_routes;
+mod auth_routes;
+mod root_routes;
 pub struct AppRoutes;
 
 impl AppRoutes {
