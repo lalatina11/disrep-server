@@ -21,7 +21,7 @@ async fn main() {
         .unwrap_or_else(|_| panic!("Failed to create tokio listener"));
     let mode = config.server.env.to_string().to_uppercase();
     println!(
-        "[{} MODE] | Server Listening on http://{}:{}",
+        "\n[{} MODE] | Server Listening on http://{}:{}\n",
         mode, config.server.host, config.server.port
     );
     axum::serve::serve(listener, app)
