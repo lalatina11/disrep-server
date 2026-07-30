@@ -10,6 +10,11 @@ impl ErrorMiddleware {
         let status = response.status();
         match status {
             StatusCode::OK | StatusCode::ACCEPTED | StatusCode::CREATED => response.into_response(),
+            StatusCode::NOT_FOUND => ApiResponse::<bool>::error(
+                Some(StatusCode::NOT_FOUND.to_string()),
+                Some(StatusCode::NOT_FOUND),
+            )
+            .into_response(),
             _other => ApiResponse::<bool>::error(None, Some(status)).into_response(),
         }
     }

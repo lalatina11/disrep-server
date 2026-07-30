@@ -1,3 +1,4 @@
+use axum::http::{HeaderMap, header as HeaderType};
 use reqwest::{Client, StatusCode};
 use tracing::error;
 
@@ -49,5 +50,15 @@ impl AuthService {
         println!("Ghoib text error");
         error!("Unexpected Supabase response: {}", res);
         Err(AuthError::internal())
+    }
+
+    pub async fn get_user(headers: &HeaderMap) -> Result<String, AuthError> {
+        let token = headers
+            .get(HeaderType::AUTHORIZATION)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string())
+            .unwrap_or("".to_string());
+
+        Ok(token)
     }
 }

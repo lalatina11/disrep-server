@@ -4,6 +4,7 @@ pub struct LoggerMiddleware;
 
 impl LoggerMiddleware {
     pub async fn handler(req: Request, next: Next) -> impl IntoResponse {
+        println!("Logger Reached!");
         let method = req.method().to_string();
         let uri = req.uri().to_string();
         let response = next.run(req).await;

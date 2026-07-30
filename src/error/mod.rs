@@ -11,4 +11,12 @@ impl AuthError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
+
+    pub fn unauthorized(msg: Option<String>) -> Self {
+        let status = StatusCode::UNAUTHORIZED;
+        Self {
+            message: msg.unwrap_or_else(|| status.to_string()),
+            status,
+        }
+    }
 }
