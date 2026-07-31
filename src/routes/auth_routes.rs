@@ -1,9 +1,10 @@
 use axum::{
     Router,
+    middleware::from_fn,
     routing::{get, post},
 };
 
-use crate::handlers::auth_handler::AuthHandler;
+use crate::{handlers::auth_handler::AuthHandler, middleware::auth_middleware::AuthMiddleware};
 
 pub struct AuthRoutes;
 
@@ -20,6 +21,8 @@ struct ProtectedAuthRoutes;
 
 impl ProtectedAuthRoutes {
     fn setup() -> Router {
-        Router::new().route("/me", get(AuthHandler::get_user))
+        Router::new()
+            .route("/me", get(AuthHandler::get_user))
+            .layer(from_fn(AuthMiddleware::handle))
     }
 }

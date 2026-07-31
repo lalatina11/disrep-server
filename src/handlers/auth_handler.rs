@@ -1,14 +1,14 @@
-use axum::http::HeaderMap;
+use axum::Extension;
 use reqwest::StatusCode;
 
 use crate::{
-    models::auth_model::{SignInPayload, SignUpPayload},
+    models::auth_model::{SignInPayload, SignUpPayload, UserPayload},
     service::auth_service::AuthService,
     utils::{
         request::json_parser::JsonParser,
         responses::{
             api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
-            auth_responses::{GetUserSuccessResponse, SignUpAndInSuccessResponse},
+            auth_responses::SignUpAndInSuccessResponse,
         },
     },
 };
@@ -43,15 +43,8 @@ impl AuthHandler {
     }
 
     pub async fn get_user(
-        headers: HeaderMap,
-    ) -> ApiResponseReturnTypeWithHeader<GetUserSuccessResponse> {
-        let service = AuthService::get_user(&headers).await;
-        match service {
-            Err(err) => ApiResponse::error(
-                Some(err.message),
-                Some(StatusCode::from_u16(err.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
-            ),
-            Ok(data) => ApiResponse::success(Some(data), None, Some(StatusCode::OK)),
-        }
+        Extension(data): Extension<UserPayload>,
+    ) -> ApiResponseReturnTypeWithHeader<UserPayload> {
+        ApiResponse::success(Some(data), None, Some(StatusCode::OK))
     }
 }
