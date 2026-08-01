@@ -2,7 +2,10 @@ use axum::Extension;
 use reqwest::StatusCode;
 
 use crate::{
-    models::auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+    models::{
+        auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+        user_model::UserModel,
+    },
     service::auth_service::AuthService,
     utils::{
         request::json_parser::JsonParser,
@@ -40,8 +43,8 @@ impl AuthHandler {
     }
 
     pub async fn get_user(
-        Extension(data): Extension<AuthPayload>,
-    ) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
+        Extension(data): Extension<UserModel>,
+    ) -> ApiResponseReturnTypeWithHeader<UserModel> {
         ApiResponse::success(Some(data), None, Some(StatusCode::OK))
     }
 }

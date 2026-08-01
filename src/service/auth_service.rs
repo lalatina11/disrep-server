@@ -5,7 +5,10 @@ use tracing::error;
 use crate::{
     config::supabase_config::SupabaseConfig,
     error::AuthError,
-    models::auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+    models::{
+        auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+        user_model::UserModel,
+    },
     service::user_service::UserService,
     utils::responses::auth_responses::{
         GetUserSuccessResponse, SignUpAndInSuccessResponse, SupabaseAuthErrorResponse,
@@ -38,23 +41,23 @@ impl AuthService {
                 AuthError::internal()
             })?;
 
-        if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let res = UserService::create_user(
-                data.user.id,
-                data.user.email,
-                data.user.user_metadata.display_name,
+        if let Ok(is_sign_up_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
+            let user_model_parsing = UserService::create_user(
+                is_sign_up_success.user.id,
+                is_sign_up_success.user.email,
+                is_sign_up_success.user.user_metadata.display_name,
             )
             .await;
-            if let Ok(res) = res {
-                return Ok(res.to_payload(data.access_token));
+            if let Ok(user_model) = user_model_parsing {
+                return Ok(user_model.to_payload(is_sign_up_success.access_token));
             }
             return Err(AuthError::internal());
         }
 
-        if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
+        if let Ok(is_sign_up_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
             return Err(AuthError {
-                message: err.msg,
-                status: err.code,
+                message: is_sign_up_err.msg,
+                status: is_sign_up_err.code,
             });
         }
 
@@ -87,25 +90,25 @@ impl AuthService {
                 AuthError::internal()
             })?;
 
-        if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let res = UserService::get_user_by_id(data.user.id).await;
-            if let Ok(res) = res {
-                return Ok(res.to_payload(data.access_token));
+        if let Ok(is_sign_in_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
+            let user_model_parsing = UserService::get_user_by_id(is_sign_in_success.user.id).await;
+            if let Ok(user_model) = user_model_parsing {
+                return Ok(user_model.to_payload(is_sign_in_success.access_token));
             }
             return Err(AuthError::internal());
         }
 
-        if let Ok(data) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
+        if let Ok(is_sign_in_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
             return Err(AuthError {
-                message: data.msg,
-                status: data.code,
+                message: is_sign_in_err.msg,
+                status: is_sign_in_err.code,
             });
         }
 
         Err(AuthError::internal())
     }
 
-    pub async fn get_user(headers: &HeaderMap) -> Result<AuthPayload, AuthError> {
+    pub async fn get_user(headers: &HeaderMap) -> Result<UserModel, AuthError> {
         let token = headers
             .get(HeaderType::AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
@@ -140,10 +143,10 @@ impl AuthService {
                 AuthError::internal()
             })?;
 
-        if let Ok(data) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
-            let res = UserService::get_user_by_id(data.id).await;
-            if let Ok(data) = res {
-                return Ok(data.to_payload(token));
+        if let Ok(is_token_valid) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
+            let user_model_parsing = UserService::get_user_by_id(is_token_valid.id).await;
+            if let Ok(data) = user_model_parsing {
+                return Ok(data);
             }
             return Err(AuthError::internal());
         }
