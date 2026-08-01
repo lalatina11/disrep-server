@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::utils::responses::auth_responses::{AppMetadata, GetUserIdentity, GetUserMetadata};
+use crate::{
+    models::user_model::UserModel,
+    utils::responses::auth_responses::{AppMetadata, GetUserIdentity, GetUserMetadata},
+};
 
 #[derive(Serialize, Deserialize, Validate)]
 pub struct SignUpUserName {
@@ -42,4 +45,10 @@ pub struct UserPayload {
     pub created_at: String,
     pub updated_at: String,
     pub is_anonymous: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AuthPayload {
+    pub access_token: String,
+    pub user: UserModel,
 }

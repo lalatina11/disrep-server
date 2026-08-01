@@ -2,14 +2,11 @@ use axum::Extension;
 use reqwest::StatusCode;
 
 use crate::{
-    models::auth_model::{SignInPayload, SignUpPayload, UserPayload},
+    models::auth_model::{AuthPayload, SignInPayload, SignUpPayload},
     service::auth_service::AuthService,
     utils::{
         request::json_parser::JsonParser,
-        responses::{
-            api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
-            auth_responses::SignUpAndInSuccessResponse,
-        },
+        responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
     },
 };
 
@@ -18,7 +15,7 @@ pub struct AuthHandler;
 impl AuthHandler {
     pub async fn sign_up(
         JsonParser(payload): JsonParser<SignUpPayload>,
-    ) -> ApiResponseReturnTypeWithHeader<SignUpAndInSuccessResponse> {
+    ) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
         let service = AuthService::sign_up(payload).await;
         match service {
             Err(err) => ApiResponse::error(
@@ -31,7 +28,7 @@ impl AuthHandler {
 
     pub async fn sign_in(
         JsonParser(payload): JsonParser<SignInPayload>,
-    ) -> ApiResponseReturnTypeWithHeader<SignUpAndInSuccessResponse> {
+    ) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
         let service = AuthService::sign_in(payload).await;
         match service {
             Err(err) => ApiResponse::error(
@@ -43,8 +40,8 @@ impl AuthHandler {
     }
 
     pub async fn get_user(
-        Extension(data): Extension<UserPayload>,
-    ) -> ApiResponseReturnTypeWithHeader<UserPayload> {
+        Extension(data): Extension<AuthPayload>,
+    ) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
         ApiResponse::success(Some(data), None, Some(StatusCode::OK))
     }
 }

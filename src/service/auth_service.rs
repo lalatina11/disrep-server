@@ -5,7 +5,8 @@ use tracing::error;
 use crate::{
     config::supabase_config::SupabaseConfig,
     error::AuthError,
-    models::auth_model::{SignInPayload, SignUpPayload},
+    models::auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+    service::user_service::UserService,
     utils::responses::auth_responses::{
         GetUserSuccessResponse, SignUpAndInSuccessResponse, SupabaseAuthErrorResponse,
     },
@@ -14,7 +15,7 @@ use crate::{
 pub struct AuthService;
 
 impl AuthService {
-    pub async fn sign_up(payload: SignUpPayload) -> Result<SignUpAndInSuccessResponse, AuthError> {
+    pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, AuthError> {
         let supabase_config = SupabaseConfig::new();
 
         let fetch = Client::new();
@@ -38,7 +39,16 @@ impl AuthService {
             })?;
 
         if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            return Ok(data);
+            let res = UserService::create_user(
+                data.user.id,
+                data.user.email,
+                data.user.user_metadata.display_name,
+            )
+            .await;
+            if let Ok(res) = res {
+                return Ok(res.to_payload(data.access_token));
+            }
+            return Err(AuthError::internal());
         }
 
         if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
@@ -52,7 +62,7 @@ impl AuthService {
         Err(AuthError::internal())
     }
 
-    pub async fn sign_in(payload: SignInPayload) -> Result<SignUpAndInSuccessResponse, AuthError> {
+    pub async fn sign_in(payload: SignInPayload) -> Result<AuthPayload, AuthError> {
         let supabase_config = SupabaseConfig::new();
         let fetch = Client::new();
         let url = format!(
@@ -78,7 +88,11 @@ impl AuthService {
             })?;
 
         if let Ok(data) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            return Ok(data);
+            let res = UserService::get_user_by_id(data.user.id).await;
+            if let Ok(res) = res {
+                return Ok(res.to_payload(data.access_token));
+            }
+            return Err(AuthError::internal());
         }
 
         if let Ok(data) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
@@ -91,7 +105,7 @@ impl AuthService {
         Err(AuthError::internal())
     }
 
-    pub async fn get_user(headers: &HeaderMap) -> Result<GetUserSuccessResponse, AuthError> {
+    pub async fn get_user(headers: &HeaderMap) -> Result<AuthPayload, AuthError> {
         let token = headers
             .get(HeaderType::AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
@@ -112,7 +126,7 @@ impl AuthService {
             .get(url)
             .header(HeaderType::CONTENT_TYPE, "application/json")
             .header("apikey", supabase_config.publishable_key)
-            .header(HeaderType::AUTHORIZATION, token)
+            .header(HeaderType::AUTHORIZATION, &token)
             .send()
             .await
             .map_err(|err| {
@@ -127,7 +141,11 @@ impl AuthService {
             })?;
 
         if let Ok(data) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
-            return Ok(data);
+            let res = UserService::get_user_by_id(data.id).await;
+            if let Ok(data) = res {
+                return Ok(data.to_payload(token));
+            }
+            return Err(AuthError::internal());
         }
 
         if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
