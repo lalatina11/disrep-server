@@ -31,6 +31,8 @@ impl UserService {
             let find_user = UserService::get_user_by_id(id).await;
             if let Ok(user_model) = find_user {
                 return Ok(user_model);
+            } else {
+                return Err("User is not inserted properly".to_string());
             }
         }
 
