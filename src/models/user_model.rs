@@ -1,8 +1,9 @@
-use sqlx::types::time::OffsetDateTime;
+use serde::{Deserialize, Serialize};
+use sqlx::{FromRow, types::time::OffsetDateTime};
 
 use crate::models::auth_model::AuthPayload;
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
 pub struct UserModel {
     pub id: String,
     pub email: String,
