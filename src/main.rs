@@ -1,9 +1,6 @@
 use core::panic;
 
-use crate::{
-    config::{AppConfig, database_config::Database},
-    routes::AppRoutes,
-};
+use crate::{config::AppConfig, routes::AppRoutes};
 
 pub mod config;
 pub mod error;
@@ -11,6 +8,7 @@ pub mod handlers;
 pub mod middleware;
 pub mod models;
 pub mod routes;
+pub mod schema;
 pub mod service;
 pub mod utils;
 
@@ -18,8 +16,6 @@ pub mod utils;
 async fn main() {
     let config = AppConfig::new();
     let app = AppRoutes::new();
-
-    Database::run_migrations().await.unwrap();
 
     let addr = format!("{}:{}", config.server.host, config.server.port);
     let listener = tokio::net::TcpListener::bind(addr)

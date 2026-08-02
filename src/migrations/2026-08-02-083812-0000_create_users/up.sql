@@ -1,4 +1,4 @@
--- Add migration script here
+-- Your SQL goes here
 CREATE TABLE users
 (
     id UUID PRIMARY KEY,

@@ -1,15 +1,19 @@
+use chrono::{DateTime, Utc};
+use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, types::time::OffsetDateTime};
+use uuid::Uuid;
 
 use crate::models::auth_model::AuthPayload;
 
-#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
+#[derive(Clone, Debug, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserModel {
-    pub id: String,
+    pub id: Uuid,
     pub email: String,
     pub display_name: String,
-    pub created_at: OffsetDateTime,
-    pub updated_at: OffsetDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl UserModel {
@@ -19,4 +23,12 @@ impl UserModel {
             user: self,
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = crate::schema::users)]
+pub struct NewUser {
+    pub id: Uuid,
+    pub email: String,
+    pub display_name: String,
 }

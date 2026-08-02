@@ -1,4 +1,4 @@
--- Add migration script here
+-- Your SQL goes here
 CREATE TABLE disaster_reports
 (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

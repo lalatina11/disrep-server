@@ -1,13 +1,15 @@
+use std::str::FromStr;
+
 use axum::http::{HeaderMap, header as HeaderType};
 use reqwest::Client;
-use tracing::error;
+use uuid::Uuid;
 
 use crate::{
     config::supabase_config::SupabaseConfig,
     error::AuthError,
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpPayload},
-        user_model::UserModel,
+        user_model::{NewUser, UserModel},
     },
     service::user_service::UserService,
     utils::responses::auth_responses::{
@@ -42,11 +44,11 @@ impl AuthService {
             })?;
 
         if let Ok(is_sign_up_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let user_model_parsing = UserService::create_user(
-                is_sign_up_success.user.id,
-                is_sign_up_success.user.email,
-                is_sign_up_success.user.user_metadata.display_name,
-            )
+            let user_model_parsing = UserService::create_user(NewUser {
+                display_name: is_sign_up_success.user.user_metadata.display_name,
+                email: is_sign_up_success.user.email,
+                id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
+            })
             .await;
             if let Ok(user_model) = user_model_parsing {
                 return Ok(user_model.to_payload(is_sign_up_success.access_token));
@@ -61,7 +63,6 @@ impl AuthService {
             });
         }
 
-        error!("Unexpected Supabase response: {}", res);
         Err(AuthError::internal())
     }
 
@@ -91,7 +92,10 @@ impl AuthService {
             })?;
 
         if let Ok(is_sign_in_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let user_model_parsing = UserService::get_user_by_id(is_sign_in_success.user.id).await;
+            let user_model_parsing = UserService::get_user_by_id(
+                Uuid::from_str(&is_sign_in_success.user.id).unwrap_or(Uuid::new_v4()),
+            )
+            .await;
             if let Ok(user_model) = user_model_parsing {
                 return Ok(user_model.to_payload(is_sign_in_success.access_token));
             }
@@ -133,18 +137,21 @@ impl AuthService {
             .send()
             .await
             .map_err(|err| {
-                error!("Supabase response error {}", err);
+                println!("Error while getting user: {}", err);
                 AuthError::internal()
             })?
             .text()
             .await
             .map_err(|err| {
-                error!("Failed to parsing text body {}", err);
+                println!("Error while parsing body: {}", err);
                 AuthError::internal()
             })?;
 
         if let Ok(is_token_valid) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
-            let user_model_parsing = UserService::get_user_by_id(is_token_valid.id).await;
+            let user_model_parsing = UserService::get_user_by_id(
+                Uuid::from_str(&is_token_valid.id).unwrap_or(Uuid::new_v4()),
+            )
+            .await;
             if let Ok(data) = user_model_parsing {
                 return Ok(data);
             }
