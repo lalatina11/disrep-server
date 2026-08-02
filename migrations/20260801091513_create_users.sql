@@ -7,7 +7,6 @@ CREATE TABLE users
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
--- Add migration script here
 CREATE INDEX idx_users_id ON users(id);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_display_name ON users(display_name);
