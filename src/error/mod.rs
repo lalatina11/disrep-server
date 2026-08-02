@@ -21,4 +21,12 @@ impl ServiceError {
             status: status.as_u16(),
         }
     }
+
+    pub fn not_found(msg: Option<String>) -> Self {
+        let status = StatusCode::NOT_FOUND;
+        Self {
+            message: msg.unwrap_or_else(|| status.to_string()),
+            status: status.as_u16(),
+        }
+    }
 }

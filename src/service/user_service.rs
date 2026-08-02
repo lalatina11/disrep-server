@@ -1,5 +1,6 @@
 use crate::{
     config::database_config::Database,
+    error::ServiceError,
     models::user_model::{NewUser, UserModel},
     schema::users as users_table,
 };
@@ -9,7 +10,7 @@ use uuid::Uuid;
 
 pub struct UserService;
 impl UserService {
-    pub async fn create_user(payload: NewUser) -> Result<UserModel, String> {
+    pub async fn create_user(payload: NewUser) -> Result<UserModel, ServiceError> {
         let conn = &mut Database::establish_connection();
 
         let query: Result<UserModel, Error> = diesel::insert_into(users_table::table)
@@ -21,10 +22,10 @@ impl UserService {
             return Ok(data);
         }
 
-        Err("Failed to create a new user".to_string())
+        Err(ServiceError::internal())
     }
 
-    pub async fn get_user_by_id(user_id: Uuid) -> Result<UserModel, String> {
+    pub async fn get_user_by_id(user_id: Uuid) -> Result<UserModel, ServiceError> {
         use crate::schema::users::dsl::*;
         let conn = &mut Database::establish_connection();
         let query: Result<UserModel, Error> = users
@@ -35,6 +36,6 @@ impl UserService {
             return Ok(res);
         }
 
-        Err("Failed to get User".to_string())
+        Err(ServiceError::not_found(None))
     }
 }
