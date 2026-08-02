@@ -1,12 +1,12 @@
 use reqwest::StatusCode;
 
 #[derive(Debug)]
-pub struct AuthError {
+pub struct ServiceError {
     pub message: String,
     pub status: u16,
 }
 
-impl AuthError {
+impl ServiceError {
     pub fn internal() -> Self {
         Self {
             message: "An unexpected error occurred".to_string(),
