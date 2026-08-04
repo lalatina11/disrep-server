@@ -32,4 +32,5 @@ pub struct NewUser {
     pub id: Uuid,
     pub email: String,
     pub display_name: String,
+    pub role: String,
 }

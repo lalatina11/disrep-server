@@ -48,6 +48,7 @@ impl AuthService {
                 display_name: is_sign_up_success.user.user_metadata.display_name,
                 email: is_sign_up_success.user.email,
                 id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
+                role: is_sign_up_success.user.role,
             })
             .await;
             if let Ok(user_model) = user_model_parsing {
