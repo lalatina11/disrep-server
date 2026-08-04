@@ -9,10 +9,10 @@ diesel::table! {
         street -> Nullable<Text>,
         #[max_length = 100]
         city -> Varchar,
-        lat -> Numeric,
-        lng -> Numeric,
-        image -> Numeric,
-        image_storage_url -> Numeric,
+        lat -> Float8,
+        lng -> Float8,
+        image -> Text,
+        image_storage_url -> Text,
         status -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -25,6 +25,7 @@ diesel::table! {
         email -> Text,
         #[max_length = 255]
         display_name -> Varchar,
+        role -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

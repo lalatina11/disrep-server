@@ -25,7 +25,7 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = format!("access_token={}", data.access_token);
+            let access_token = AuthService::generate_cookie(data.access_token.clone());
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
@@ -57,13 +57,35 @@ impl AuthHandler {
         JsonParser(payload): JsonParser<SignInPayload>,
     ) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
         let service = AuthService::sign_in(payload).await;
-        match service {
-            Err(err) => ApiResponse::error(
-                Some(err.message),
-                Some(StatusCode::from_u16(err.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
-            ),
-            Ok(data) => ApiResponse::success(Some(data), None, None),
+        let mut headers = HeaderMap::new();
+        headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
+        if let Ok(data) = service {
+            let access_token = AuthService::generate_cookie(data.access_token.clone());
+            headers.insert(
+                HeaderType::SET_COOKIE,
+                HeaderValue::from_str(&access_token).unwrap(),
+            );
+            return (
+                StatusCode::CREATED,
+                headers,
+                Json::<ApiResponse<AuthPayload>>(ApiResponse {
+                    success: true,
+                    message: "Login user success".to_string(),
+                    data: Some(data),
+                }),
+            );
+        } else if let Err(err) = service {
+            return (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                headers,
+                Json::<ApiResponse<AuthPayload>>(ApiResponse {
+                    success: false,
+                    message: err.message.to_string(),
+                    data: None,
+                }),
+            );
         }
+        ApiResponse::error(None, None)
     }
 
     pub async fn get_user(

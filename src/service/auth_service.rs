@@ -5,8 +5,8 @@ use reqwest::Client;
 use uuid::Uuid;
 
 use crate::{
-    config::supabase_config::SupabaseConfig,
-    error::AuthError,
+    config::{server_config::AppEnv, supabase_config::SupabaseConfig},
+    error::ServiceError,
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpPayload},
         user_model::{NewUser, UserModel},
@@ -20,7 +20,7 @@ use crate::{
 pub struct AuthService;
 
 impl AuthService {
-    pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, AuthError> {
+    pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
         let supabase_config = SupabaseConfig::new();
 
         let fetch = Client::new();
@@ -34,13 +34,13 @@ impl AuthService {
             .await
             .map_err(|_| {
                 println!("Response error");
-                AuthError::internal()
+                ServiceError::internal()
             })?
             .text()
             .await
             .map_err(|_| {
                 println!("Parsing text error");
-                AuthError::internal()
+                ServiceError::internal()
             })?;
 
         if let Ok(is_sign_up_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
@@ -48,25 +48,26 @@ impl AuthService {
                 display_name: is_sign_up_success.user.user_metadata.display_name,
                 email: is_sign_up_success.user.email,
                 id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
+                role: is_sign_up_success.user.role,
             })
             .await;
             if let Ok(user_model) = user_model_parsing {
                 return Ok(user_model.to_payload(is_sign_up_success.access_token));
             }
-            return Err(AuthError::internal());
+            return Err(ServiceError::internal());
         }
 
         if let Ok(is_sign_up_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(AuthError {
+            return Err(ServiceError {
                 message: is_sign_up_err.msg,
                 status: is_sign_up_err.code,
             });
         }
 
-        Err(AuthError::internal())
+        Err(ServiceError::internal())
     }
 
-    pub async fn sign_in(payload: SignInPayload) -> Result<AuthPayload, AuthError> {
+    pub async fn sign_in(payload: SignInPayload) -> Result<AuthPayload, ServiceError> {
         let supabase_config = SupabaseConfig::new();
         let fetch = Client::new();
         let url = format!(
@@ -82,13 +83,13 @@ impl AuthService {
             .await
             .map_err(|_| {
                 println!("Response error");
-                AuthError::internal()
+                ServiceError::internal()
             })?
             .text()
             .await
             .map_err(|_| {
                 println!("Parsing text error");
-                AuthError::internal()
+                ServiceError::internal()
             })?;
 
         if let Ok(is_sign_in_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
@@ -99,20 +100,20 @@ impl AuthService {
             if let Ok(user_model) = user_model_parsing {
                 return Ok(user_model.to_payload(is_sign_in_success.access_token));
             }
-            return Err(AuthError::internal());
+            return Err(ServiceError::internal());
         }
 
         if let Ok(is_sign_in_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(AuthError {
+            return Err(ServiceError {
                 message: is_sign_in_err.msg,
                 status: is_sign_in_err.code,
             });
         }
 
-        Err(AuthError::internal())
+        Err(ServiceError::internal())
     }
 
-    pub async fn get_user(headers: &HeaderMap) -> Result<UserModel, AuthError> {
+    pub async fn get_user(headers: &HeaderMap) -> Result<UserModel, ServiceError> {
         let token = headers
             .get(HeaderType::AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
@@ -120,7 +121,7 @@ impl AuthService {
             .unwrap_or("".to_string());
 
         if token == "" {
-            return Err(AuthError {
+            return Err(ServiceError {
                 message: "token are required".to_string(),
                 status: 401,
             });
@@ -138,13 +139,13 @@ impl AuthService {
             .await
             .map_err(|err| {
                 println!("Error while getting user: {}", err);
-                AuthError::internal()
+                ServiceError::internal()
             })?
             .text()
             .await
             .map_err(|err| {
                 println!("Error while parsing body: {}", err);
-                AuthError::internal()
+                ServiceError::internal()
             })?;
 
         if let Ok(is_token_valid) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
@@ -155,16 +156,27 @@ impl AuthService {
             if let Ok(data) = user_model_parsing {
                 return Ok(data);
             }
-            return Err(AuthError::internal());
+            return Err(ServiceError::internal());
         }
 
         if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(AuthError {
+            return Err(ServiceError {
                 message: err.msg,
                 status: err.code,
             });
         }
 
-        Err(AuthError::internal())
+        Err(ServiceError::internal())
+    }
+
+    pub fn generate_cookie(token: String) -> String {
+        let max_age = 6 * 24 * 60 * 60; // 6 days in seconds (259200)
+        let is_production = AppEnv::new() == AppEnv::Production;
+        let secure_flag = if is_production { "; Secure" } else { "" };
+
+        format!(
+            "access_token={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
+            token, max_age, secure_flag
+        )
     }
 }
