@@ -1,5 +1,6 @@
 use crate::config::env_config::EnvConfig;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppEnv {
     Development,
     Staging,

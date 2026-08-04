@@ -25,7 +25,7 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = format!("access_token={};httpOnly=true;", data.access_token);
+            let access_token = AuthService::generate_cookie(data.access_token.clone());
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
@@ -60,7 +60,7 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = format!("access_token={};httpOnly=true;", data.access_token);
+            let access_token = AuthService::generate_cookie(data.access_token.clone());
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),

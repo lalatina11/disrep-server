@@ -5,7 +5,7 @@ use reqwest::Client;
 use uuid::Uuid;
 
 use crate::{
-    config::supabase_config::SupabaseConfig,
+    config::{server_config::AppEnv, supabase_config::SupabaseConfig},
     error::ServiceError,
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpPayload},
@@ -166,5 +166,16 @@ impl AuthService {
         }
 
         Err(ServiceError::internal())
+    }
+
+    pub fn generate_cookie(token: String) -> String {
+        let max_age = 6 * 24 * 60 * 60; // 6 days in seconds (259200)
+        let is_production = AppEnv::new() == AppEnv::Production;
+        let secure_flag = if is_production { "; Secure" } else { "" };
+
+        format!(
+            "access_token={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
+            token, max_age, secure_flag
+        )
     }
 }
