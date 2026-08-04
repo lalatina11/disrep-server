@@ -1,4 +1,8 @@
-use diesel::{RunQueryDsl, SelectableHelper, query_dsl::methods::SelectDsl, result::Error};
+use diesel::{
+    ExpressionMethods, RunQueryDsl, SelectableHelper,
+    query_dsl::methods::{FilterDsl, SelectDsl},
+    result::Error,
+};
 use reqwest::StatusCode;
 
 use crate::{
@@ -14,6 +18,7 @@ impl DisasterService {
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_reports::dsl::*;
         let res: Result<Vec<DisasterReportsModel>, Error> = disaster_reports
+            .filter(status.ne("pending"))
             .select(DisasterReportsModel::as_select())
             .load(conn);
         if let Ok(data) = res {
