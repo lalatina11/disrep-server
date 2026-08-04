@@ -25,6 +25,7 @@ diesel::table! {
         email -> Text,
         #[max_length = 255]
         display_name -> Varchar,
+        role -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

@@ -12,6 +12,7 @@ pub struct UserModel {
     pub id: Uuid,
     pub email: String,
     pub display_name: String,
+    pub role: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

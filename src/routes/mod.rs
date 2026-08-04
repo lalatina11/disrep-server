@@ -5,6 +5,7 @@ use crate::{
     routes::{api_routes::ApiRoutes, root_routes::RootRoutes},
 };
 
+mod admin_routes;
 mod api_routes;
 mod auth_routes;
 mod root_routes;
