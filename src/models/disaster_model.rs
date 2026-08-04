@@ -13,6 +13,7 @@ pub struct DisasterReportsModel {
     pub title: String,
     pub description: Option<String>,
     pub street: Option<String>,
+    pub city: String,
     pub lat: f64,
     pub lng: f64,
     pub image: String,
@@ -29,9 +30,36 @@ pub struct CreateDisasterReport {
     pub title: String,
     pub description: Option<String>,
     pub street: Option<String>,
+    pub city: String,
     pub lat: f64,
     pub lng: f64,
     pub image: String,
     pub image_storage_url: String,
-    pub status: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateDisasterReportPayload {
+    pub title: String,
+    pub description: Option<String>,
+    pub street: Option<String>,
+    pub city: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub image: String,
+    pub image_storage_url: String,
+}
+
+impl CreateDisasterReportPayload {
+    pub fn into_record(self, user_id: Uuid) -> CreateDisasterReport {
+        CreateDisasterReport {
+            user_id,
+            title: self.title,
+            description: self.description,
+            street: self.street,
+            city: self.city,
+            lat: self.lat,
+            lng: self.lng,
+            image: self.image,
+            image_storage_url: self.image_storage_url,
+        }
+    }
 }

@@ -29,4 +29,8 @@ impl ServiceError {
             status: status.as_u16(),
         }
     }
+
+    pub fn get_status(&self) -> StatusCode {
+        StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+    }
 }
