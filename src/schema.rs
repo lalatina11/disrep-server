@@ -9,8 +9,8 @@ diesel::table! {
         street -> Nullable<Text>,
         #[max_length = 100]
         city -> Varchar,
-        lat -> Numeric,
-        lng -> Numeric,
+        lat -> Float8,
+        lng -> Float8,
         image -> Text,
         image_storage_url -> Text,
         status -> Text,
