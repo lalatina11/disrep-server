@@ -7,7 +7,7 @@ use uuid::Uuid;
 #[diesel(table_name = crate::schema::disaster_reports)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 
-pub struct DisasterModel {
+pub struct DisasterReportsModel {
     pub id: Uuid,
     pub user_id: Uuid,
     pub title: String,
