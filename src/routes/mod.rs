@@ -8,6 +8,7 @@ use crate::{
 mod admin_routes;
 mod api_routes;
 mod auth_routes;
+mod disaster_routes;
 mod root_routes;
 pub struct AppRoutes;
 
