@@ -6,6 +6,7 @@ pub mod database_config;
 pub mod env_config;
 pub mod server_config;
 pub mod supabase_config;
+pub mod utility_config;
 
 pub struct AppConfig {
     pub server: ServerConfig,

@@ -26,6 +26,8 @@ diesel::table! {
         #[max_length = 255]
         display_name -> Varchar,
         role -> Text,
+        avatar -> Nullable<Text>,
+        avatar_storage_url -> Nullable<Text>,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

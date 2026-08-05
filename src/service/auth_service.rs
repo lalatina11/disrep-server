@@ -31,8 +31,6 @@ impl AuthService {
             },
         };
 
-        println!("{:?}", payload);
-
         let fetch = Client::new();
         let url = format!("{}/auth/v1/signup", supabase_config.project_url);
         let res = fetch
@@ -59,6 +57,7 @@ impl AuthService {
                 email: is_sign_up_success.user.email,
                 id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
                 role: is_sign_up_success.user.user_metadata.role,
+                avatar: None,
             })
             .await;
             if let Ok(user_model) = user_model_parsing {

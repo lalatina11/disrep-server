@@ -13,6 +13,8 @@ pub struct UserModel {
     pub email: String,
     pub display_name: String,
     pub role: String,
+    pub avatar: Option<String>,
+    pub avatar_storage_url: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -33,4 +35,5 @@ pub struct NewUser {
     pub email: String,
     pub display_name: String,
     pub role: String,
+    pub avatar: Option<String>,
 }

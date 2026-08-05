@@ -1,5 +1,5 @@
 use crate::{
-    config::database_config::Database,
+    config::{database_config::Database, utility_config::UtilityConfig},
     error::ServiceError,
     models::user_model::{NewUser, UserModel},
     schema::users as users_table,
@@ -12,6 +12,13 @@ pub struct UserService;
 impl UserService {
     pub async fn create_user(payload: NewUser) -> Result<UserModel, ServiceError> {
         let conn = &mut Database::establish_connection();
+        let payload = NewUser {
+            display_name: payload.display_name.clone(),
+            email: payload.email,
+            id: payload.id,
+            role: payload.role,
+            avatar: Some(UserService::generate_avatar(&payload.display_name)),
+        };
 
         let query: Result<UserModel, Error> = diesel::insert_into(users_table::table)
             .values(payload)
@@ -37,5 +44,10 @@ impl UserService {
         }
 
         Err(ServiceError::not_found(None))
+    }
+
+    pub fn generate_avatar(name: &str) -> String {
+        let util = UtilityConfig::new();
+        format!("{}{}", util.avatar_generator_base_url, name)
     }
 }
