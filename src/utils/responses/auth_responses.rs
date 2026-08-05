@@ -37,6 +37,7 @@ pub struct AppMetadata {
 pub struct UserMetadata {
     pub display_name: String,
     pub email: String,
+    pub role: String,
     pub email_verified: bool,
     pub phone_verified: bool,
     pub sub: String,

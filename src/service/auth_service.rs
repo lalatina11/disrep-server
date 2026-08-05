@@ -8,7 +8,7 @@ use crate::{
     config::{server_config::AppEnv, supabase_config::SupabaseConfig},
     error::ServiceError,
     models::{
-        auth_model::{AuthPayload, SignInPayload, SignUpPayload},
+        auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
         user_model::{NewUser, UserModel},
     },
     service::user_service::UserService,
@@ -22,6 +22,16 @@ pub struct AuthService;
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
         let supabase_config = SupabaseConfig::new();
+        let payload = SignUpPayload {
+            email: payload.email,
+            password: payload.password,
+            data: SignUpAdditionalData {
+                role: Some("user".to_string()),
+                display_name: payload.data.display_name,
+            },
+        };
+
+        println!("{:?}", payload);
 
         let fetch = Client::new();
         let url = format!("{}/auth/v1/signup", supabase_config.project_url);
@@ -48,7 +58,7 @@ impl AuthService {
                 display_name: is_sign_up_success.user.user_metadata.display_name,
                 email: is_sign_up_success.user.email,
                 id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
-                role: is_sign_up_success.user.role,
+                role: is_sign_up_success.user.user_metadata.role,
             })
             .await;
             if let Ok(user_model) = user_model_parsing {

@@ -6,19 +6,20 @@ use crate::{
     utils::responses::auth_responses::{AppMetadata, GetUserIdentity, GetUserMetadata},
 };
 
-#[derive(Serialize, Deserialize, Validate)]
-pub struct SignUpUserName {
+#[derive(Serialize, Deserialize, Validate, Debug)]
+pub struct SignUpAdditionalData {
     #[validate(length(min = 3, max = 128))]
-    display_name: String,
+    pub display_name: String,
+    pub role: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 pub struct SignUpPayload {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 8, max = 32))]
     pub password: String,
-    pub data: SignUpUserName,
+    pub data: SignUpAdditionalData,
 }
 
 #[derive(Serialize, Deserialize, Validate)]
