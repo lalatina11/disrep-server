@@ -1,3 +1,4 @@
+use axum::extract::Multipart;
 use reqwest::{Client, header as HeaderType};
 
 use crate::{
@@ -82,5 +83,34 @@ impl SupabaseService {
                 ServiceError::internal()
             })?;
         Ok(res)
+    }
+
+    pub async fn upload_image(mut multipart: Multipart) -> Result<(), ServiceError> {
+        while let Some(field) = multipart.next_field().await? {
+            let name = field.name().unwrap_or("");
+
+            match name {
+                "title" => {
+                    let title = field.text().await?;
+                }
+
+                "city" => {
+                    let city = field.text().await?;
+                }
+
+                "image" => {
+                    let filename = field.file_name().unwrap_or("image.jpg").to_string();
+
+                    let bytes = field.bytes().await?;
+
+                    println!("{filename}");
+                    println!("{} bytes", bytes.len());
+                }
+
+                _ => {}
+            }
+        }
+
+        Err(ServiceError::internal())
     }
 }

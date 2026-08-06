@@ -1,5 +1,7 @@
 use reqwest::StatusCode;
 
+pub mod supabase_error;
+
 #[derive(Debug)]
 pub struct ServiceError {
     pub message: String,
@@ -32,5 +34,14 @@ impl ServiceError {
 
     pub fn get_status(&self) -> StatusCode {
         StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+    }
+}
+
+impl From<axum::extract::multipart::MultipartError> for ServiceError {
+    fn from(err: axum::extract::multipart::MultipartError) -> Self {
+        Self {
+            message: err.to_string(),
+            status: StatusCode::BAD_REQUEST.as_u16(),
+        }
     }
 }

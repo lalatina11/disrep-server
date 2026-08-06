@@ -5,15 +5,13 @@ use uuid::Uuid;
 
 use crate::{
     config::server_config::AppEnv,
-    error::ServiceError,
+    error::{ServiceError, supabase_error::SupabaseAuthErrorResponse},
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
         user_model::{NewUser, UserModel},
     },
     service::{supabase_service::SupabaseService, user_service::UserService},
-    utils::responses::auth_responses::{
-        GetUserSuccessResponse, SignUpAndInSuccessResponse, SupabaseAuthErrorResponse,
-    },
+    utils::responses::auth_responses::{GetUserSuccessResponse, SignUpAndInSuccessResponse},
 };
 
 pub struct AuthService;
