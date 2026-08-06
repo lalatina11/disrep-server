@@ -181,7 +181,8 @@ impl SupabaseService {
                     })?;
 
                 if let Ok(res) = serde_json::from_str::<SupabaseStorageResult>(&res_text) {
-                    payload.image = res.key.clone();
+                    let image_url = CommonUtility::generate_image_url(res.key.clone());
+                    payload.image = image_url;
                     payload.image_storage_url = res.key;
                     return Ok(payload);
                 }
