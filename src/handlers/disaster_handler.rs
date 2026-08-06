@@ -1,15 +1,9 @@
 use axum::{Extension, extract::Multipart, response::IntoResponse};
 
 use crate::{
-    models::{
-        disaster_model::{CreateDisasterReportPayload, DisasterReportsModel},
-        user_model::UserModel,
-    },
+    models::{disaster_model::DisasterReportsModel, user_model::UserModel},
     service::disaster_service::DisasterService,
-    utils::{
-        request::json_parser::JsonParser,
-        responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
-    },
+    utils::responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
 };
 
 pub struct DisasterHandler;
@@ -22,18 +16,8 @@ impl DisasterHandler {
             Err(err) => err.to_handler_error(),
         }
     }
-    pub async fn create(
-        Extension(user): Extension<UserModel>,
-        JsonParser(payload): JsonParser<CreateDisasterReportPayload>,
-    ) -> impl IntoResponse {
-        let service = DisasterService::create(payload.into_record(user.id));
-        match service {
-            Ok(data) => ApiResponse::success(Some(data), None, None),
-            Err(err) => err.to_handler_error(),
-        }
-    }
 
-    pub async fn supabase_upload(
+    pub async fn create(
         Extension(user): Extension<UserModel>,
         multipart: Multipart,
     ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {

@@ -21,11 +21,7 @@ impl DisasterRoutes {
     fn protected() -> Router {
         Router::new()
             .route("/", post(DisasterHandler::create))
-            .route(
-                "/upload",
-                post(DisasterHandler::supabase_upload)
-                    .layer(DefaultBodyLimit::max(10 * 1024 * 1024)),
-            )
+            .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
             .layer(from_fn(AuthMiddleware::handle))
     }
 }
