@@ -1,7 +1,10 @@
 use axum::{Extension, extract::Multipart, response::IntoResponse};
 
 use crate::{
-    models::{disaster_model::CreateDisasterReportPayload, user_model::UserModel},
+    models::{
+        disaster_model::{CreateDisasterReportPayload, DisasterReportsModel},
+        user_model::UserModel,
+    },
     service::disaster_service::DisasterService,
     utils::{
         request::json_parser::JsonParser,
@@ -32,13 +35,12 @@ impl DisasterHandler {
 
     pub async fn supabase_upload(
         Extension(user): Extension<UserModel>,
-
         multipart: Multipart,
-    ) -> ApiResponseReturnTypeWithHeader<bool> {
+    ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
         let service = DisasterService::upload(user.id, multipart).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(_) => ApiResponse::success(None, None, None),
+            Ok(disaster) => ApiResponse::success(Some(disaster), None, None),
         }
     }
 }
