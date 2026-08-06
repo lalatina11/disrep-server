@@ -37,18 +37,13 @@ impl DisasterService {
             .values(payload)
             .returning(DisasterReportsModel::as_returning())
             .get_result(conn);
-        if let Ok(data) = res {
-            return Ok(data);
-        }
-
-        if let Err(_) = res {
-            return Err(ServiceError {
+        match res {
+            Ok(data) => Ok(data),
+            Err(_) => Err(ServiceError {
                 message: "Failed to create a Disaster Report".to_string(),
                 status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            });
+            }),
         }
-
-        Err(ServiceError::internal())
     }
 
     pub async fn create(
@@ -57,19 +52,17 @@ impl DisasterService {
     ) -> Result<DisasterReportsModel, ServiceError> {
         let _payload = SupabaseService::upload_image(multipart).await;
 
-        if let Err(err) = _payload {
-            return Err(err);
-        }
-
-        if let Ok(payload) = _payload {
-            let insert = DisasterService::insert(payload.into_record(user_id));
-            if let Ok(result) = insert {
-                return Ok(result);
-            } else if let Err(err) = insert {
-                return Err(err);
+        match _payload {
+            Err(err) => Err(err),
+            Ok(payload) => {
+                let insert = DisasterService::insert(payload.into_record(user_id));
+                if let Ok(result) = insert {
+                    return Ok(result);
+                } else if let Err(err) = insert {
+                    return Err(err);
+                }
+                Err(ServiceError::internal())
             }
         }
-
-        Err(ServiceError::internal())
     }
 }
