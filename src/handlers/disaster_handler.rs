@@ -21,7 +21,7 @@ impl DisasterHandler {
         Extension(user): Extension<UserModel>,
         multipart: Multipart,
     ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
-        let service = DisasterService::upload(user.id, multipart).await;
+        let service = DisasterService::create(user.id, multipart).await;
         match service {
             Err(err) => err.to_handler_error(),
             Ok(disaster) => ApiResponse::success(Some(disaster), None, None),

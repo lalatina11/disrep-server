@@ -30,7 +30,7 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub fn create(payload: CreateDisasterReport) -> Result<DisasterReportsModel, ServiceError> {
+    pub fn insert(payload: CreateDisasterReport) -> Result<DisasterReportsModel, ServiceError> {
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_reports;
         let res: Result<DisasterReportsModel, Error> = diesel::insert_into(disaster_reports::table)
@@ -50,7 +50,8 @@ impl DisasterService {
 
         Err(ServiceError::internal())
     }
-    pub async fn upload(
+
+    pub async fn create(
         user_id: Uuid,
         multipart: Multipart,
     ) -> Result<DisasterReportsModel, ServiceError> {
@@ -61,7 +62,7 @@ impl DisasterService {
         }
 
         if let Ok(payload) = _payload {
-            let insert = DisasterService::create(payload.into_record(user_id));
+            let insert = DisasterService::insert(payload.into_record(user_id));
             if let Ok(result) = insert {
                 return Ok(result);
             } else if let Err(err) = insert {
