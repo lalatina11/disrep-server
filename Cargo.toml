@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = { version = "0.8.9", features = ["http2", "macros", "ws"] }
+axum = { version = "0.8.9", features = ["http2", "macros", "multipart", "ws"] }
 dotenvy = "0.15.7"
 reqwest = { version = "0.13.4", features = ["blocking", "json"] }
 serde = { version = "1.0.229", features = ["derive"] }
