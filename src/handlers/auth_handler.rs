@@ -66,7 +66,7 @@ impl AuthHandler {
                 HeaderValue::from_str(&access_token).unwrap(),
             );
             return (
-                StatusCode::CREATED,
+                StatusCode::OK,
                 headers,
                 Json::<ApiResponse<AuthPayload>>(ApiResponse {
                     success: true,
