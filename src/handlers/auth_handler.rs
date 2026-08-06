@@ -40,15 +40,7 @@ impl AuthHandler {
                 }),
             );
         } else if let Err(err) = service {
-            return (
-                StatusCode::UNPROCESSABLE_ENTITY,
-                headers,
-                Json::<ApiResponse<AuthPayload>>(ApiResponse {
-                    success: false,
-                    message: err.message.to_string(),
-                    data: None,
-                }),
-            );
+            return err.to_handler_error();
         }
         ApiResponse::error(None, None)
     }
@@ -75,15 +67,7 @@ impl AuthHandler {
                 }),
             );
         } else if let Err(err) = service {
-            return (
-                StatusCode::UNPROCESSABLE_ENTITY,
-                headers,
-                Json::<ApiResponse<AuthPayload>>(ApiResponse {
-                    success: false,
-                    message: err.message.to_string(),
-                    data: None,
-                }),
-            );
+            return err.to_handler_error();
         }
         ApiResponse::error(None, None)
     }
