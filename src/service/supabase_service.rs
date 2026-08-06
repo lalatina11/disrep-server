@@ -59,4 +59,28 @@ impl SupabaseService {
             })?;
         Ok(res)
     }
+
+    pub async fn get_user(token: String) -> Result<String, ServiceError> {
+        let supabase_config = SupabaseConfig::new();
+        let url = format!("{}/auth/v1/user", supabase_config.project_url);
+        let fetch = Client::new();
+        let res = fetch
+            .get(url)
+            .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .header(HeaderType::AUTHORIZATION, &token)
+            .send()
+            .await
+            .map_err(|err| {
+                println!("Error while getting user: {}", err);
+                ServiceError::internal()
+            })?
+            .text()
+            .await
+            .map_err(|err| {
+                println!("Error while parsing body: {}", err);
+                ServiceError::internal()
+            })?;
+        Ok(res)
+    }
 }

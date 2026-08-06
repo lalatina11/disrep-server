@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
 use axum::http::{HeaderMap, header as HeaderType};
-use reqwest::Client;
 use uuid::Uuid;
 
 use crate::{
-    config::{server_config::AppEnv, supabase_config::SupabaseConfig},
+    config::server_config::AppEnv,
     error::ServiceError,
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
@@ -105,43 +104,26 @@ impl AuthService {
             });
         }
 
-        let supabase_config = SupabaseConfig::new();
-        let url = format!("{}/auth/v1/user", supabase_config.project_url);
-        let fetch = Client::new();
-        let res = fetch
-            .get(url)
-            .header(HeaderType::CONTENT_TYPE, "application/json")
-            .header("apikey", supabase_config.publishable_key)
-            .header(HeaderType::AUTHORIZATION, &token)
-            .send()
-            .await
-            .map_err(|err| {
-                println!("Error while getting user: {}", err);
-                ServiceError::internal()
-            })?
-            .text()
-            .await
-            .map_err(|err| {
-                println!("Error while parsing body: {}", err);
-                ServiceError::internal()
-            })?;
+        let res = SupabaseService::get_user(token).await;
 
-        if let Ok(is_token_valid) = serde_json::from_str::<GetUserSuccessResponse>(&res) {
-            let user_model_parsing = UserService::get_user_by_id(
-                Uuid::from_str(&is_token_valid.id).unwrap_or(Uuid::new_v4()),
-            )
-            .await;
-            if let Ok(data) = user_model_parsing {
-                return Ok(data);
+        if let Ok(res_text) = res {
+            if let Ok(is_token_valid) = serde_json::from_str::<GetUserSuccessResponse>(&res_text) {
+                let user_model_parsing = UserService::get_user_by_id(
+                    Uuid::from_str(&is_token_valid.id).unwrap_or(Uuid::new_v4()),
+                )
+                .await;
+                if let Ok(data) = user_model_parsing {
+                    return Ok(data);
+                }
+                return Err(ServiceError::internal());
             }
-            return Err(ServiceError::internal());
-        }
 
-        if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(ServiceError {
-                message: err.msg,
-                status: err.code,
-            });
+            if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text) {
+                return Err(ServiceError {
+                    message: err.msg,
+                    status: err.code,
+                });
+            }
         }
 
         Err(ServiceError::internal())
