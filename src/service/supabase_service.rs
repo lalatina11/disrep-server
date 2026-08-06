@@ -201,18 +201,18 @@ impl SupabaseService {
                         ServiceError::internal()
                     })?;
 
-                match serde_json::from_str::<SupabaseStorageResult>(&res_text) {
-                    Ok(res) => {
-                        payload.image = CommonUtility::generate_image_url(res.key.clone());
-                        payload.image_storage_url = res.key;
-                        Ok(payload)
-                    }
-                    Err(_) => match serde_json::from_str::<SupabaseStorageErrorResponse>(&res_text)
-                    {
-                        Ok(err) => Err(err.to_service_error()),
-                        Err(_) => Err(ServiceError::internal()),
-                    },
+                if let Ok(res) = serde_json::from_str::<SupabaseStorageResult>(&res_text) {
+                    let image_url = CommonUtility::generate_image_url(res.key.clone());
+                    payload.image = image_url;
+                    payload.image_storage_url = res.key;
+                    return Ok(payload);
                 }
+
+                if let Ok(err) = serde_json::from_str::<SupabaseStorageErrorResponse>(&res_text) {
+                    return Err(err.to_service_error());
+                }
+
+                Err(ServiceError::internal())
             }
         }
     }
