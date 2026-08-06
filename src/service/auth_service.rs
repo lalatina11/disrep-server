@@ -63,46 +63,29 @@ impl AuthService {
     }
 
     pub async fn sign_in(payload: SignInPayload) -> Result<AuthPayload, ServiceError> {
-        let supabase_config = SupabaseConfig::new();
-        let fetch = Client::new();
-        let url = format!(
-            "{}/auth/v1/token?grant_type=password",
-            supabase_config.project_url
-        );
-        let res = fetch
-            .post(url)
-            .header(HeaderType::CONTENT_TYPE, "application/json")
-            .header("apikey", supabase_config.publishable_key)
-            .json(&payload)
-            .send()
-            .await
-            .map_err(|_| {
-                println!("Response error");
-                ServiceError::internal()
-            })?
-            .text()
-            .await
-            .map_err(|_| {
-                println!("Parsing text error");
-                ServiceError::internal()
-            })?;
+        let res = SupabaseService::sign_in_user(payload).await;
 
-        if let Ok(is_sign_in_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let user_model_parsing = UserService::get_user_by_id(
-                Uuid::from_str(&is_sign_in_success.user.id).unwrap_or(Uuid::new_v4()),
-            )
-            .await;
-            if let Ok(user_model) = user_model_parsing {
-                return Ok(user_model.to_payload(is_sign_in_success.access_token));
+        if let Ok(res_text) = res {
+            if let Ok(is_sign_in_success) =
+                serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
+            {
+                let user_model_parsing = UserService::get_user_by_id(
+                    Uuid::from_str(&is_sign_in_success.user.id).unwrap_or(Uuid::new_v4()),
+                )
+                .await;
+                if let Ok(user_model) = user_model_parsing {
+                    return Ok(user_model.to_payload(is_sign_in_success.access_token));
+                }
+                return Err(ServiceError::internal());
             }
-            return Err(ServiceError::internal());
-        }
 
-        if let Ok(is_sign_in_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(ServiceError {
-                message: is_sign_in_err.msg,
-                status: is_sign_in_err.code,
-            });
+            if let Ok(is_sign_in_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text)
+            {
+                return Err(ServiceError {
+                    message: is_sign_in_err.msg,
+                    status: is_sign_in_err.code,
+                });
+            }
         }
 
         Err(ServiceError::internal())
