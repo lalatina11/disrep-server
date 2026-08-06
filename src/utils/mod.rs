@@ -18,13 +18,8 @@ impl CommonUtility {
         )
     }
 
-    pub fn generate_image_url(bucket_name: &str) -> String {
+    pub fn generate_image_url(image_key: &str) -> String {
         let supabase = SupabaseConfig::new();
-        format!(
-            "{}/object/public/{}/{}",
-            supabase.storage_base_url,
-            bucket_name,
-            CommonUtility::generate_unique_name()
-        )
+        format!("{}/object/public/{}", supabase.storage_base_url, image_key,)
     }
 }
