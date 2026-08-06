@@ -4,4 +4,5 @@ use axum::body::Bytes;
 pub struct ImageFormData {
     pub name: String,
     pub bytes: Option<Bytes>,
+    pub content_type: Option<String>,
 }

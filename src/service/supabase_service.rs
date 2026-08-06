@@ -106,6 +106,7 @@ impl SupabaseService {
         let mut image = ImageFormData {
             name: "".to_string(),
             bytes: None,
+            content_type: None,
         };
         while let Some(field) = multipart.next_field().await? {
             let name = field.name().unwrap_or("");
@@ -113,7 +114,9 @@ impl SupabaseService {
             match name {
                 "image" => {
                     let filename = field.file_name().unwrap_or("image.jpg").to_string();
+                    let content_type = field.content_type().map(|s| s.to_string());
                     image.name = filename;
+                    image.content_type = content_type;
                     let bytes = field.bytes().await?;
                     image.bytes = Some(bytes);
                 }
@@ -161,11 +164,29 @@ impl SupabaseService {
                     "{}/object/disaster-image/{}",
                     supabase.storage_base_url, image_name
                 );
+
+                // let content_type = match image.content_type.as_deref() {
+                //     Some("application/octet-stream") | None => {
+                //         let lower_name = image.name.to_lowercase();
+                //         if lower_name.ends_with(".png") {
+                //             "image/png"
+                //         } else if lower_name.ends_with(".webp") {
+                //             "image/webp"
+                //         } else if lower_name.ends_with(".gif") {
+                //             "image/gif"
+                //         } else {
+                //             "image/jpeg"
+                //         }
+                //     }
+                //     Some(ct) => ct,
+                // };
+
                 let res_text = client
                     .post(url)
                     .header("apikey", supabase.publishable_key)
                     .header(HeaderType::AUTHORIZATION, supabase.admin_token)
                     .header(HeaderType::CACHE_CONTROL, 3600)
+                    .header(HeaderType::CONTENT_TYPE, "image/*")
                     .body(bytes)
                     .send()
                     .await

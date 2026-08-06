@@ -1,5 +1,6 @@
 use axum::{
     Router,
+    extract::DefaultBodyLimit,
     middleware::from_fn,
     routing::{get, post},
 };
@@ -20,7 +21,11 @@ impl DisasterRoutes {
     fn protected() -> Router {
         Router::new()
             .route("/", post(DisasterHandler::create))
-            .route("/upload", post(DisasterHandler::supabase_upload))
+            .route(
+                "/upload",
+                post(DisasterHandler::supabase_upload)
+                    .layer(DefaultBodyLimit::max(10 * 1024 * 1024)),
+            )
             .layer(from_fn(AuthMiddleware::handle))
     }
 }

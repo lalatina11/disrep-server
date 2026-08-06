@@ -1,14 +1,17 @@
+use axum::extract::Multipart;
 use diesel::{
     ExpressionMethods, RunQueryDsl, SelectableHelper,
     query_dsl::methods::{FilterDsl, SelectDsl},
     result::Error,
 };
 use reqwest::StatusCode;
+use uuid::Uuid;
 
 use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::disaster_model::{CreateDisasterReport, DisasterReportsModel},
+    service::supabase_service::SupabaseService,
 };
 
 pub struct DisasterService;
@@ -43,6 +46,27 @@ impl DisasterService {
                 message: "Failed to create a Disaster Report".to_string(),
                 status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
             });
+        }
+
+        Err(ServiceError::internal())
+    }
+    pub async fn upload(
+        user_id: Uuid,
+        multipart: Multipart,
+    ) -> Result<DisasterReportsModel, ServiceError> {
+        let _payload = SupabaseService::upload_image(multipart).await;
+
+        if let Err(err) = _payload {
+            return Err(err);
+        }
+
+        if let Ok(payload) = _payload {
+            let insert = DisasterService::create(payload.into_record(user_id));
+            if let Ok(result) = insert {
+                return Ok(result);
+            } else if let Err(err) = insert {
+                return Err(err);
+            }
         }
 
         Err(ServiceError::internal())
