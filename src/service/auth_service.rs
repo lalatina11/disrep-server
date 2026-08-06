@@ -11,7 +11,7 @@ use crate::{
         auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
         user_model::{NewUser, UserModel},
     },
-    service::user_service::UserService,
+    service::{supabase_service::SupabaseService, user_service::UserService},
     utils::responses::auth_responses::{
         GetUserSuccessResponse, SignUpAndInSuccessResponse, SupabaseAuthErrorResponse,
     },
@@ -21,7 +21,6 @@ pub struct AuthService;
 
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
-        let supabase_config = SupabaseConfig::new();
         let payload = SignUpPayload {
             email: payload.email,
             password: payload.password,
@@ -31,46 +30,33 @@ impl AuthService {
             },
         };
 
-        let fetch = Client::new();
-        let url = format!("{}/auth/v1/signup", supabase_config.project_url);
-        let res = fetch
-            .post(url)
-            .header(HeaderType::CONTENT_TYPE, "application/json")
-            .header("apikey", supabase_config.publishable_key)
-            .json(&payload)
-            .send()
-            .await
-            .map_err(|_| {
-                println!("Response error");
-                ServiceError::internal()
-            })?
-            .text()
-            .await
-            .map_err(|_| {
-                println!("Parsing text error");
-                ServiceError::internal()
-            })?;
+        let res = SupabaseService::sign_up_user(payload).await;
 
-        if let Ok(is_sign_up_success) = serde_json::from_str::<SignUpAndInSuccessResponse>(&res) {
-            let user_model_parsing = UserService::create_user(NewUser {
-                display_name: is_sign_up_success.user.user_metadata.display_name,
-                email: is_sign_up_success.user.email,
-                id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
-                role: is_sign_up_success.user.user_metadata.role,
-                avatar: None,
-            })
-            .await;
-            if let Ok(user_model) = user_model_parsing {
-                return Ok(user_model.to_payload(is_sign_up_success.access_token));
+        if let Ok(res_text) = res {
+            if let Ok(is_sign_up_success) =
+                serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
+            {
+                let user_model_parsing = UserService::create_user(NewUser {
+                    display_name: is_sign_up_success.user.user_metadata.display_name,
+                    email: is_sign_up_success.user.email,
+                    id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
+                    role: is_sign_up_success.user.user_metadata.role,
+                    avatar: None,
+                })
+                .await;
+                if let Ok(user_model) = user_model_parsing {
+                    return Ok(user_model.to_payload(is_sign_up_success.access_token));
+                }
+                return Err(ServiceError::internal());
             }
-            return Err(ServiceError::internal());
-        }
 
-        if let Ok(is_sign_up_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-            return Err(ServiceError {
-                message: is_sign_up_err.msg,
-                status: is_sign_up_err.code,
-            });
+            if let Ok(is_sign_up_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text)
+            {
+                return Err(ServiceError {
+                    message: is_sign_up_err.msg,
+                    status: is_sign_up_err.code,
+                });
+            }
         }
 
         Err(ServiceError::internal())
