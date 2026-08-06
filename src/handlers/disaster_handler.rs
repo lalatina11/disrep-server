@@ -16,7 +16,7 @@ impl DisasterHandler {
         let service = DisasterService::get_all();
         match service {
             Ok(data) => ApiResponse::success(Some(data), None, None),
-            Err(err) => ApiResponse::error(Some(err.message.clone()), Some(err.get_status())),
+            Err(err) => err.to_handler_error(),
         }
     }
     pub async fn create(
@@ -26,17 +26,14 @@ impl DisasterHandler {
         let service = DisasterService::create(payload.into_record(user.id));
         match service {
             Ok(data) => ApiResponse::success(Some(data), None, None),
-            Err(err) => ApiResponse::error(Some(err.message.clone()), Some(err.get_status())),
+            Err(err) => err.to_handler_error(),
         }
     }
 
     pub async fn supabase_upload(multipart: Multipart) -> ApiResponseReturnTypeWithHeader<bool> {
         let service = SupabaseService::upload_image(multipart).await;
         match service {
-            Err(err) => {
-                let status = err.get_status();
-                ApiResponse::error(Some(err.message), Some(status))
-            }
+            Err(err) => err.to_handler_error(),
             Ok(_) => ApiResponse::success(None, None, None),
         }
     }
