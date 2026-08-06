@@ -20,6 +20,7 @@ impl DisasterRoutes {
     fn protected() -> Router {
         Router::new()
             .route("/", post(DisasterHandler::create))
+            .route("/upload", post(DisasterHandler::supabase_upload))
             .layer(from_fn(AuthMiddleware::handle))
     }
 }

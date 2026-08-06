@@ -89,26 +89,19 @@ impl SupabaseService {
         while let Some(field) = multipart.next_field().await? {
             let name = field.name().unwrap_or("");
 
-            match name {
-                "title" => {
-                    let title = field.text().await?;
-                }
-
-                "city" => {
-                    let city = field.text().await?;
-                }
-
+            let bytes = match name {
                 "image" => {
                     let filename = field.file_name().unwrap_or("image.jpg").to_string();
 
-                    let bytes = field.bytes().await?;
+                    let _bytes = field.bytes().await?;
 
                     println!("{filename}");
-                    println!("{} bytes", bytes.len());
+                    println!("{} bytes", _bytes.len());
+                    Ok(_bytes)
                 }
 
-                _ => {}
-            }
+                _ => Err(ServiceError::internal()),
+            };
         }
 
         Err(ServiceError::internal())

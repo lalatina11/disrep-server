@@ -1,9 +1,12 @@
-use axum::{Extension, response::IntoResponse};
+use axum::{Extension, extract::Multipart, response::IntoResponse};
 
 use crate::{
     models::{disaster_model::CreateDisasterReportPayload, user_model::UserModel},
-    service::disaster_service::DisasterService,
-    utils::{request::json_parser::JsonParser, responses::api_responses::ApiResponse},
+    service::{disaster_service::DisasterService, supabase_service::SupabaseService},
+    utils::{
+        request::json_parser::JsonParser,
+        responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
+    },
 };
 
 pub struct DisasterHandler;
@@ -24,6 +27,17 @@ impl DisasterHandler {
         match service {
             Ok(data) => ApiResponse::success(Some(data), None, None),
             Err(err) => ApiResponse::error(Some(err.message.clone()), Some(err.get_status())),
+        }
+    }
+
+    pub async fn supabase_upload(multipart: Multipart) -> ApiResponseReturnTypeWithHeader<bool> {
+        let service = SupabaseService::upload_image(multipart).await;
+        match service {
+            Err(err) => {
+                let status = err.get_status();
+                ApiResponse::error(Some(err.message), Some(status))
+            }
+            Ok(_) => ApiResponse::success(None, None, None),
         }
     }
 }
