@@ -1,4 +1,7 @@
 use reqwest::StatusCode;
+use serde::Serialize;
+
+use crate::utils::responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader};
 
 pub mod supabase_error;
 
@@ -43,5 +46,14 @@ impl From<axum::extract::multipart::MultipartError> for ServiceError {
             message: err.to_string(),
             status: StatusCode::BAD_REQUEST.as_u16(),
         }
+    }
+}
+
+impl ServiceError {
+    pub fn to_handler_error<T: Serialize>(&self) -> ApiResponseReturnTypeWithHeader<T> {
+        ApiResponse::error(
+            Some(self.message.clone()),
+            Some(StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)),
+        )
     }
 }
