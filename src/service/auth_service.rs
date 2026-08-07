@@ -47,12 +47,8 @@ impl AuthService {
                 return Err(ServiceError::internal());
             }
 
-            if let Ok(is_sign_up_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text)
-            {
-                return Err(ServiceError {
-                    message: is_sign_up_err.msg,
-                    status: is_sign_up_err.code,
-                });
+            if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text) {
+                return Err(err.to_service_error());
             }
         }
 
@@ -76,12 +72,8 @@ impl AuthService {
                 return Err(ServiceError::internal());
             }
 
-            if let Ok(is_sign_in_err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text)
-            {
-                return Err(ServiceError {
-                    message: is_sign_in_err.msg,
-                    status: is_sign_in_err.code,
-                });
+            if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text) {
+                return Err(err.to_service_error());
             }
         }
 
@@ -117,10 +109,7 @@ impl AuthService {
             }
 
             if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text) {
-                return Err(ServiceError {
-                    message: err.msg,
-                    status: err.code,
-                });
+                return Err(err.to_service_error());
             }
         }
 

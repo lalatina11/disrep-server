@@ -9,6 +9,15 @@ pub struct SupabaseAuthErrorResponse {
     pub msg: String,
 }
 
+impl SupabaseAuthErrorResponse {
+    pub fn to_service_error(self) -> ServiceError {
+        ServiceError {
+            message: self.msg,
+            status: self.code,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SupabaseStorageErrorResponse {
     #[serde(rename = "statusCode")]
