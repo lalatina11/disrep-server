@@ -1,4 +1,3 @@
-use axum::extract::Multipart;
 use reqwest::{Client, header as HeaderType};
 
 use crate::{
@@ -6,7 +5,6 @@ use crate::{
     error::{ServiceError, supabase_error::SupabaseStorageErrorResponse},
     models::{
         auth_model::{SignInPayload, SignUpPayload},
-        disaster_model::CreateDisasterReportPayload,
         form_data::ImageFormData,
     },
     utils::{CommonUtility, responses::storage_response::SupabaseStorageResult},
@@ -90,71 +88,7 @@ impl SupabaseService {
         Ok(res)
     }
 
-    pub async fn upload_image(
-        mut multipart: Multipart,
-    ) -> Result<CreateDisasterReportPayload, ServiceError> {
-        let mut payload = CreateDisasterReportPayload {
-            title: "".to_string(),
-            description: Some("".to_string()),
-            street: Some("".to_string()),
-            city: "".to_string(),
-            lat: 0.0,
-            lng: 0.0,
-            image: "".to_string(),
-            image_storage_url: "".to_string(),
-        };
-        let mut image = ImageFormData {
-            name: "".to_string(),
-            bytes: None,
-            content_type: None,
-        };
-        while let Some(field) = multipart.next_field().await? {
-            let name = field.name().unwrap_or("");
-
-            match name {
-                "image" => {
-                    let filename = field.file_name().unwrap_or("image.jpg").to_string();
-                    let content_type = field.content_type().map(|s| s.to_string());
-                    image.name = filename;
-                    image.content_type = content_type;
-                    let bytes = field.bytes().await?;
-                    image.bytes = Some(bytes);
-                }
-                "title" => {
-                    payload.title = field.text().await.unwrap_or("no title".to_string());
-                }
-                "description" => {
-                    let description = field.text().await;
-                    payload.description = match description {
-                        Ok(desc) => Some(desc),
-                        Err(_) => None,
-                    }
-                }
-                "street" => {
-                    let street = field.text().await;
-                    payload.street = match street {
-                        Ok(desc) => Some(desc),
-                        Err(_) => None,
-                    }
-                }
-                "city" => {
-                    payload.city = field.text().await.unwrap_or("no city".to_string());
-                }
-                "lat" => {
-                    let string_lat = field.text().await.unwrap_or("".to_string());
-                    let _lat: f64 = string_lat.parse().unwrap_or(0.0);
-                    payload.lat = _lat;
-                }
-                "lng" => {
-                    let string_lng = field.text().await.unwrap_or("".to_string());
-                    let _lng: f64 = string_lng.parse().unwrap_or(0.0);
-                    payload.lng = _lng;
-                }
-
-                _ => {}
-            };
-        }
-
+    pub async fn upload_image(image: ImageFormData) -> Result<SupabaseStorageResult, ServiceError> {
         match image.bytes {
             None => Err(ServiceError::internal()),
             Some(bytes) => {
@@ -166,28 +100,28 @@ impl SupabaseService {
                     supabase.storage_base_url, image_name
                 );
 
-                // let content_type = match image.content_type.as_deref() {
-                //     Some("application/octet-stream") | None => {
-                //         let lower_name = image.name.to_lowercase();
-                //         if lower_name.ends_with(".png") {
-                //             "image/png"
-                //         } else if lower_name.ends_with(".webp") {
-                //             "image/webp"
-                //         } else if lower_name.ends_with(".gif") {
-                //             "image/gif"
-                //         } else {
-                //             "image/jpeg"
-                //         }
-                //     }
-                //     Some(ct) => ct,
-                // };
+                let content_type = match image.content_type.as_deref() {
+                    Some("application/octet-stream") | None => {
+                        let lower_name = image.name.to_lowercase();
+                        if lower_name.ends_with(".png") {
+                            "image/png"
+                        } else if lower_name.ends_with(".webp") {
+                            "image/webp"
+                        } else if lower_name.ends_with(".gif") {
+                            "image/gif"
+                        } else {
+                            "image/jpeg"
+                        }
+                    }
+                    Some(ct) => ct,
+                };
 
                 let res_text = client
                     .post(url)
                     .header("apikey", supabase.publishable_key)
                     .header(HeaderType::AUTHORIZATION, supabase.admin_token)
                     .header(HeaderType::CACHE_CONTROL, 3600)
-                    .header(HeaderType::CONTENT_TYPE, "image/*")
+                    .header(HeaderType::CONTENT_TYPE, content_type)
                     .body(bytes)
                     .send()
                     .await
@@ -202,18 +136,14 @@ impl SupabaseService {
                         ServiceError::internal()
                     })?;
 
-                if let Ok(res) = serde_json::from_str::<SupabaseStorageResult>(&res_text) {
-                    let image_url = CommonUtility::generate_image_url(res.key.clone());
-                    payload.image = image_url;
-                    payload.image_storage_url = res.key;
-                    return Ok(payload);
+                match serde_json::from_str::<SupabaseStorageResult>(&res_text) {
+                    Ok(res) => Ok(res),
+                    Err(_) => match serde_json::from_str::<SupabaseStorageErrorResponse>(&res_text)
+                    {
+                        Ok(err) => Err(err.to_service_error()),
+                        Err(_) => Err(ServiceError::internal()),
+                    },
                 }
-
-                if let Ok(err) = serde_json::from_str::<SupabaseStorageErrorResponse>(&res_text) {
-                    return Err(err.to_service_error());
-                }
-
-                Err(ServiceError::internal())
             }
         }
     }
