@@ -43,7 +43,6 @@ impl DisasterHandler {
         match service {
             Err(err) => err.to_handler_error(),
             Ok(disaster) => {
-                // return ApiResponse::success(Some(disaster), None, None);
                 if disaster.status != "new" {
                     return ApiResponse::success(Some(disaster), None, None);
                 }
