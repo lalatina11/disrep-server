@@ -5,7 +5,7 @@ use crate::{
     error::{ServiceError, supabase_error::SupabaseStorageErrorResponse},
     models::{
         auth_model::{SignInPayload, SignUpPayload},
-        form_data::ImageFormData,
+        form_data::FileFormData,
     },
     utils::{CommonUtility, responses::storage_response::SupabaseStorageResult},
 };
@@ -88,7 +88,7 @@ impl SupabaseService {
         Ok(res)
     }
 
-    pub async fn upload_image(image: ImageFormData) -> Result<SupabaseStorageResult, ServiceError> {
+    pub async fn upload_image(image: FileFormData) -> Result<SupabaseStorageResult, ServiceError> {
         match image.bytes {
             None => Err(ServiceError::internal()),
             Some(bytes) => {

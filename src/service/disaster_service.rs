@@ -8,7 +8,7 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_model::{CreateDisasterReport, CreateDisasterReportPayload, DisasterReportsModel},
-        form_data::ImageFormData,
+        form_data::FileFormData,
     },
     service::supabase_service::SupabaseService,
     utils::CommonUtility,
@@ -51,7 +51,7 @@ impl DisasterService {
 
     pub async fn parse_multipart(
         mut multipart: Multipart,
-    ) -> Result<(CreateDisasterReportPayload, ImageFormData), ServiceError> {
+    ) -> Result<(CreateDisasterReportPayload, FileFormData), ServiceError> {
         let mut payload = CreateDisasterReportPayload {
             title: "".to_string(),
             description: Some("".to_string()),
@@ -62,7 +62,7 @@ impl DisasterService {
             image: "".to_string(),
             image_storage_url: "".to_string(),
         };
-        let mut image = ImageFormData {
+        let mut image = FileFormData {
             name: "".to_string(),
             bytes: None,
             content_type: None,
