@@ -1,5 +1,5 @@
 use axum::extract::Multipart;
-use reqwest::{Client, StatusCode, header as HeaderType};
+use reqwest::{Client, header as HeaderType};
 
 use crate::{
     config::supabase_config::SupabaseConfig,
@@ -153,13 +153,6 @@ impl SupabaseService {
 
                 _ => {}
             };
-        }
-
-        if !image.name.starts_with("image") {
-            return Err(ServiceError {
-                message: "only image are allowed".to_string(),
-                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            });
         }
 
         match image.bytes {

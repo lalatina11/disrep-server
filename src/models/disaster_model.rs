@@ -36,7 +36,9 @@ pub struct CreateDisasterReport {
     pub image: String,
     pub image_storage_url: String,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Insertable, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_reports)]
+
 pub struct CreateDisasterReportPayload {
     pub title: String,
     pub description: Option<String>,

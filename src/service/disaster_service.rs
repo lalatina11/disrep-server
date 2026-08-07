@@ -8,10 +8,8 @@ use reqwest::StatusCode;
 use uuid::Uuid;
 
 use crate::{
-    config::database_config::Database,
-    error::ServiceError,
-    models::disaster_model::{CreateDisasterReport, DisasterReportsModel},
-    service::supabase_service::SupabaseService,
+    config::database_config::Database, error::ServiceError,
+    models::disaster_model::DisasterReportsModel, service::supabase_service::SupabaseService,
 };
 
 pub struct DisasterService;
@@ -30,39 +28,35 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub fn insert(payload: CreateDisasterReport) -> Result<DisasterReportsModel, ServiceError> {
-        let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports;
-        let res: Result<DisasterReportsModel, Error> = diesel::insert_into(disaster_reports::table)
-            .values(payload)
-            .returning(DisasterReportsModel::as_returning())
-            .get_result(conn);
-        match res {
-            Ok(data) => Ok(data),
-            Err(_) => Err(ServiceError {
-                message: "Failed to create a Disaster Report".to_string(),
-                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            }),
-        }
-    }
-
     pub async fn create(
         user_id: Uuid,
         multipart: Multipart,
     ) -> Result<DisasterReportsModel, ServiceError> {
         let _payload = SupabaseService::upload_image(multipart).await;
 
-        match _payload {
-            Err(err) => Err(err),
-            Ok(payload) => {
-                let insert = DisasterService::insert(payload.into_record(user_id));
-                if let Ok(result) = insert {
-                    return Ok(result);
-                } else if let Err(err) = insert {
-                    return Err(err);
-                }
-                Err(ServiceError::internal())
-            }
+        if let Err(err) = _payload {
+            return Err(err);
         }
+
+        if let Ok(payload) = _payload {
+            let conn = &mut Database::establish_connection();
+            use crate::schema::disaster_reports;
+            let res: Result<DisasterReportsModel, Error> =
+                diesel::insert_into(disaster_reports::table)
+                    .values(payload.into_record(user_id))
+                    .returning(DisasterReportsModel::as_returning())
+                    .get_result(conn);
+            return match res {
+                Ok(data) => Ok(data),
+                Err(err) => {
+                    println!("{err}");
+                    Err(ServiceError {
+                        message: "Failed to create a Disaster Report".to_string(),
+                        status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    })
+                }
+            };
+        }
+        Err(ServiceError::internal())
     }
 }
