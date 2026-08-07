@@ -1,9 +1,5 @@
 use axum::extract::Multipart;
-use diesel::{
-    ExpressionMethods, RunQueryDsl, SelectableHelper,
-    query_dsl::methods::{FilterDsl, SelectDsl},
-    result::Error,
-};
+use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper, result::Error};
 use reqwest::StatusCode;
 use uuid::Uuid;
 
@@ -130,5 +126,38 @@ impl DisasterService {
         payload.image_storage_url = storage_res.key;
 
         Self::insert(payload.into_record(user_id))
+    }
+
+    pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::disaster_reports::dsl::*;
+        let res: Result<DisasterReportsModel, Error> = disaster_reports
+            .find(disaster_id)
+            .select(DisasterReportsModel::as_select())
+            .first(conn);
+
+        match res {
+            Err(_) => Err(ServiceError::not_found(Some(
+                "Disaster Report was not found".to_string(),
+            ))),
+            Ok(data) => Ok(data),
+        }
+    }
+
+    pub async fn approve(_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::disaster_reports::dsl::*;
+        let _disaster = Self::get_by_id(_id).await?;
+
+        let res: Result<DisasterReportsModel, Error> =
+            diesel::update(disaster_reports.find(_disaster.id))
+                .set(status.eq("new".to_string()))
+                .returning(DisasterReportsModel::as_returning())
+                .get_result(conn);
+
+        match res {
+            Err(_) => Err(ServiceError::internal()),
+            Ok(data) => Ok(data),
+        }
     }
 }
