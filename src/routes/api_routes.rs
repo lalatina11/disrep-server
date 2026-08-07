@@ -2,7 +2,9 @@ use axum::{Router, routing::get};
 
 use crate::{
     handlers::root_handler::RootHandler,
-    routes::{auth_routes::AuthRoutes, disaster_routes::DisasterRoutes},
+    routes::{
+        auth_routes::AuthRoutes, disaster_routes::DisasterRoutes, upload_routes::UploadRoutes,
+    },
 };
 
 pub struct ApiRoutes;
@@ -13,5 +15,6 @@ impl ApiRoutes {
             .route("/", get(RootHandler::index))
             .nest("/auth", AuthRoutes::setup())
             .nest("/disaster", DisasterRoutes::setup())
+            .nest("/upload", UploadRoutes::setup())
     }
 }

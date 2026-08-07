@@ -10,6 +10,7 @@ mod api_routes;
 mod auth_routes;
 mod disaster_routes;
 mod root_routes;
+mod upload_routes;
 pub struct AppRoutes;
 
 impl AppRoutes {
