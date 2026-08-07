@@ -20,4 +20,12 @@ impl AuthMiddleware {
             }
         }
     }
+
+    pub async fn optional(mut req: Request, next: Next) -> impl IntoResponse {
+        let user_payload = AuthService::get_user(req.headers()).await;
+        if let Ok(data) = user_payload {
+            req.extensions_mut().insert(data);
+        }
+        next.run(req).await.into_response()
+    }
 }

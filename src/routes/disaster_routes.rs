@@ -16,7 +16,10 @@ impl DisasterRoutes {
     pub fn setup() -> Router {
         Router::new()
             .route("/", get(DisasterHandler::get_all))
-            .route("/{id}", get(DisasterHandler::get_by_id))
+            .route(
+                "/{id}",
+                get(DisasterHandler::get_by_id).layer(from_fn(AuthMiddleware::optional)),
+            )
             .merge(Self::protected())
     }
 

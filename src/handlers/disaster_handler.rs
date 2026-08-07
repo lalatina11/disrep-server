@@ -3,8 +3,10 @@ use axum::{
     extract::{Multipart, Path},
     response::IntoResponse,
 };
+use reqwest::StatusCode;
 
 use crate::{
+    middleware::admin_middleware::ALLOWED_ADMIN_ROLES,
     models::{disaster_model::DisasterReportsModel, user_model::UserModel},
     service::disaster_service::DisasterService,
     utils::responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
@@ -33,12 +35,27 @@ impl DisasterHandler {
     }
 
     pub async fn get_by_id(
+        authenticated: Option<Extension<UserModel>>,
         Path(id): Path<uuid::Uuid>,
     ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
+        let authenticated = authenticated.map(|Extension(user)| user);
         let service = DisasterService::get_by_id(id).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(disaster) => ApiResponse::success(Some(disaster), None, None),
+            Ok(disaster) => {
+                // return ApiResponse::success(Some(disaster), None, None);
+                if disaster.status != "new" {
+                    return ApiResponse::success(Some(disaster), None, None);
+                }
+                if let Some(user) = authenticated {
+                    if disaster.status == "new" && ALLOWED_ADMIN_ROLES.contains(&user.role.as_str())
+                    {
+                        return ApiResponse::success(Some(disaster), None, None);
+                    }
+                }
+                let status = StatusCode::NOT_FOUND;
+                ApiResponse::error(Some(status.to_string()), Some(status))
+            }
         }
     }
 
