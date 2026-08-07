@@ -6,6 +6,8 @@ pub struct UploadRoutes;
 
 impl UploadRoutes {
     pub fn setup() -> Router {
-        Router::new().route("/image", post(UploadHandler::image))
+        Router::new()
+            .route("/image", post(UploadHandler::image))
+            .route("/video", post(UploadHandler::video))
     }
 }
