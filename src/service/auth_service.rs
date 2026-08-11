@@ -62,11 +62,11 @@ impl AuthService {
             if let Ok(is_sign_in_success) =
                 serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
             {
-                let user_model_parsing = UserService::get_user_by_id(
+                let existing_user = UserService::get_user_by_id(
                     Uuid::from_str(&is_sign_in_success.user.id).unwrap_or(Uuid::new_v4()),
                 )
                 .await;
-                if let Ok(user_model) = user_model_parsing {
+                if let Ok(user_model) = existing_user {
                     return Ok(user_model.to_payload(is_sign_in_success.access_token));
                 }
                 return Err(ServiceError::internal());
