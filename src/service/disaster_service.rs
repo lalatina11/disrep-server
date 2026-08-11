@@ -7,7 +7,10 @@ use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::{
-        disaster_model::{CreateDisasterReport, CreateDisasterReportPayload, DisasterReportsModel},
+        disaster_model::{
+            CreateDisasterReport, CreateDisasterReportImage, CreateDisasterReportPayload,
+            DisasterReportImageModel, DisasterReportsModel,
+        },
         form_data::FileFormData,
     },
     service::supabase_service::SupabaseService,
@@ -49,6 +52,28 @@ impl DisasterService {
         }
     }
 
+    pub fn insert_image(
+        record: CreateDisasterReportImage,
+    ) -> Result<DisasterReportImageModel, ServiceError> {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::disaster_report_images;
+        let res: Result<DisasterReportImageModel, Error> =
+            diesel::insert_into(disaster_report_images::table)
+                .values(record)
+                .returning(DisasterReportImageModel::as_returning())
+                .get_result(conn);
+        match res {
+            Ok(data) => Ok(data),
+            Err(err) => {
+                println!("{err}");
+                Err(ServiceError {
+                    message: "Failed to save disaster report image".to_string(),
+                    status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                })
+            }
+        }
+    }
+
     pub async fn parse_multipart(
         mut multipart: Multipart,
     ) -> Result<(CreateDisasterReportPayload, FileFormData), ServiceError> {
@@ -59,8 +84,7 @@ impl DisasterService {
             city: "".to_string(),
             lat: 0.0,
             lng: 0.0,
-            image: "".to_string(),
-            image_storage_url: "".to_string(),
+            is_anon: Some(false),
         };
         let mut image = FileFormData {
             name: "".to_string(),
@@ -109,6 +133,11 @@ impl DisasterService {
                     let _lng: f64 = string_lng.parse().unwrap_or(0.0);
                     payload.lng = _lng;
                 }
+                "is_anon" => {
+                    let string_anon = field.text().await.unwrap_or("false".to_string());
+                    let is_anon_bool: bool = string_anon.parse().unwrap_or(false);
+                    payload.is_anon = Some(is_anon_bool);
+                }
                 _ => {}
             };
         }
@@ -119,13 +148,19 @@ impl DisasterService {
         user_id: Uuid,
         multipart: Multipart,
     ) -> Result<DisasterReportsModel, ServiceError> {
-        let (mut payload, image) = Self::parse_multipart(multipart).await?;
-        let storage_res = SupabaseService::upload_file(image).await?;
+        let (payload, image) = Self::parse_multipart(multipart).await?;
+        let report = Self::insert(payload.into_record(user_id))?;
 
-        payload.image = CommonUtility::generate_image_url(storage_res.key.clone());
-        payload.image_storage_url = storage_res.key;
+        if image.bytes.is_some() {
+            let storage_res = SupabaseService::upload_file(image).await?;
+            let image_url = CommonUtility::generate_image_url(storage_res.key);
+            let _ = Self::insert_image(CreateDisasterReportImage {
+                disaster_report_id: report.id,
+                url: image_url,
+            });
+        }
 
-        Self::insert(payload.into_record(user_id))
+        Ok(report)
     }
 
     pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {

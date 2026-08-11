@@ -6,7 +6,6 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_reports)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-
 pub struct DisasterReportsModel {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -16,8 +15,7 @@ pub struct DisasterReportsModel {
     pub city: String,
     pub lat: f64,
     pub lng: f64,
-    pub image: String,
-    pub image_storage_url: String,
+    pub is_anon: Option<bool>,
     pub status: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -33,12 +31,10 @@ pub struct CreateDisasterReport {
     pub city: String,
     pub lat: f64,
     pub lng: f64,
-    pub image: String,
-    pub image_storage_url: String,
+    pub is_anon: Option<bool>,
 }
-#[derive(Debug, Clone, Serialize, Insertable, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_reports)]
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDisasterReportPayload {
     pub title: String,
     pub description: Option<String>,
@@ -46,8 +42,7 @@ pub struct CreateDisasterReportPayload {
     pub city: String,
     pub lat: f64,
     pub lng: f64,
-    pub image: String,
-    pub image_storage_url: String,
+    pub is_anon: Option<bool>,
 }
 
 impl CreateDisasterReportPayload {
@@ -60,8 +55,23 @@ impl CreateDisasterReportPayload {
             city: self.city,
             lat: self.lat,
             lng: self.lng,
-            image: self.image,
-            image_storage_url: self.image_storage_url,
+            is_anon: self.is_anon,
         }
     }
+}
+
+#[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct DisasterReportImageModel {
+    pub id: Uuid,
+    pub disaster_report_id: Uuid,
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_report_images)]
+pub struct CreateDisasterReportImage {
+    pub disaster_report_id: Uuid,
+    pub url: String,
 }
