@@ -81,4 +81,22 @@ impl UploadService {
         }
         Err(ServiceError::internal())
     }
+    pub async fn upload_video(multipart: Multipart) -> Result<SupabaseStorageResult, ServiceError> {
+        let buff = Self::parse_video_multipart(multipart).await;
+
+        if let Err(err) = &buff {
+            println!("Error while uploading video:\n{:?}", err);
+        }
+        if let Ok(file) = buff {
+            if let Some(content_type) = file.content_type.clone() {
+                if !content_type.starts_with("video") {
+                    return Err(ServiceError::unprocessable(Some(
+                        "Only video are allowed".to_string(),
+                    )));
+                }
+            }
+            return SupabaseService::upload_file(file).await;
+        }
+        Err(ServiceError::internal())
+    }
 }
