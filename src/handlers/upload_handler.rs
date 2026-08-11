@@ -19,5 +19,13 @@ impl UploadHandler {
             Ok(res) => res.into_response(),
         }
     }
-    pub async fn video() {}
+    pub async fn video(
+        multipart: Multipart,
+    ) -> ApiResponseReturnTypeWithHeader<SupabaseStorageResult> {
+        let service = UploadService::upload_video(multipart).await;
+        match service {
+            Err(err) => err.to_handler_error(),
+            Ok(res) => res.into_response(),
+        }
+    }
 }
