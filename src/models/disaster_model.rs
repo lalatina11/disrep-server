@@ -45,7 +45,7 @@ pub struct CreateDisasterReportWithImage {
     pub lat: f64,
     pub lng: f64,
     pub is_anon: Option<bool>,
-    pub images: Vec<DisasterImagePayload>,
+    pub attachment: Vec<DisasterImagePayload>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

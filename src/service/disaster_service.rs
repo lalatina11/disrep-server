@@ -32,9 +32,9 @@ impl DisasterService {
     ) -> Result<DisasterReportsModel, ServiceError> {
         use crate::schema::disaster_reports;
 
-        if payload.images.len() < 1 {
+        if payload.attachment.len() < 1 {
             return Err(ServiceError::unprocessable(Some(
-                "Please insert an image".to_string(),
+                "Please insert an image or video".to_string(),
             )));
         }
 
@@ -53,7 +53,7 @@ impl DisasterService {
         }
 
         if let Ok(disaster) = insert_disaster_res {
-            for img in payload.images {
+            for img in payload.attachment {
                 let payload = img.into_insert(disaster.id);
                 let res = DisasterImageService::insert(payload).await;
                 if let Err(_) = res {
