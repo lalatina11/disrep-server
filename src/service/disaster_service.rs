@@ -1,3 +1,4 @@
+use chrono::Utc;
 use diesel::{
     ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper, result::Error as DieselError,
 };
@@ -89,7 +90,7 @@ impl DisasterService {
 
         let res: Result<DisasterReportsModel, DieselError> =
             diesel::update(disaster_reports.find(_disaster.id))
-                .set(status.eq("new".to_string()))
+                .set((status.eq("new".to_string()), updated_at.eq(Utc::now())))
                 .returning(DisasterReportsModel::as_returning())
                 .get_result(conn);
 
