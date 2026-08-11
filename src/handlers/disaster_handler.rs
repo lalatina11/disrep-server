@@ -32,7 +32,11 @@ impl DisasterHandler {
         let service = DisasterService::create(user.id, payload).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(disaster) => ApiResponse::success(Some(disaster), None, None),
+            Ok(disaster) => ApiResponse::success(
+                Some(disaster),
+                Some("Success to crete disaster".to_string()),
+                Some(StatusCode::CREATED),
+            ),
         }
     }
 
