@@ -70,6 +70,13 @@ impl UploadService {
             println!("Error while uploading image:\n{:?}", err);
         }
         if let Ok(file) = buff {
+            if let Some(content_type) = &file.content_type {
+                if !content_type.starts_with("image") {
+                    return Err(ServiceError::unprocessable(Some(
+                        "Only image are allowed".to_string(),
+                    )));
+                }
+            }
             return SupabaseService::upload_file(file).await;
         }
         Err(ServiceError::internal())
