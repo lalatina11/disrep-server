@@ -36,6 +36,13 @@ impl DisasterService {
                 "Please insert an image or video".to_string(),
             )));
         }
+        for at in &payload.attachment {
+            if at.url.trim().is_empty() {
+                return Err(ServiceError::unprocessable(Some(
+                    "Invalid attachment URL".to_string(),
+                )));
+            }
+        }
 
         let user = UserService::get_user_by_id(user_id).await?;
 
@@ -60,8 +67,8 @@ impl DisasterService {
         }
 
         if let Ok(disaster) = insert_disaster_res {
-            for img in payload.attachment {
-                let payload = img.into_insert(disaster.id);
+            for attachment in payload.attachment {
+                let payload = attachment.into_insert(disaster.id);
                 let res = DisasterImageService::insert(payload).await;
                 if let Err(_) = res {
                     return Err(ServiceError::internal());
