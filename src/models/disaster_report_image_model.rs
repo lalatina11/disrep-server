@@ -18,3 +18,17 @@ pub struct DisasterReportsImageModelPayload {
     pub disaster_report_id: Uuid,
     pub url: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DisasterImagePayload {
+    pub url: String,
+}
+
+impl DisasterImagePayload {
+    pub fn into_insert(self, disaster_report_id: Uuid) -> DisasterReportsImageModelPayload {
+        DisasterReportsImageModelPayload {
+            disaster_report_id,
+            url: self.url,
+        }
+    }
+}

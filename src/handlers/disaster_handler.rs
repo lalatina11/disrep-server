@@ -1,15 +1,17 @@
-use axum::{
-    Extension,
-    extract::{Multipart, Path},
-    response::IntoResponse,
-};
+use axum::{Extension, extract::Path, response::IntoResponse};
 use reqwest::StatusCode;
 
 use crate::{
     middleware::admin_middleware::ALLOWED_ADMIN_ROLES,
-    models::{disaster_model::DisasterReportsModel, user_model::UserModel},
+    models::{
+        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel},
+        user_model::UserModel,
+    },
     service::disaster_service::DisasterService,
-    utils::responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
+    utils::{
+        request::json_parser::JsonParser,
+        responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
+    },
 };
 
 pub struct DisasterHandler;
@@ -25,9 +27,9 @@ impl DisasterHandler {
 
     pub async fn create(
         Extension(user): Extension<UserModel>,
-        multipart: Multipart,
+        JsonParser(payload): JsonParser<CreateDisasterReportWithImage>,
     ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
-        let service = DisasterService::create(user.id, multipart).await;
+        let service = DisasterService::create(user.id, payload).await;
         match service {
             Err(err) => err.to_handler_error(),
             Ok(disaster) => ApiResponse::success(Some(disaster), None, None),

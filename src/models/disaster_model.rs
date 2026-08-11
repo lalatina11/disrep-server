@@ -3,6 +3,8 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::models::disaster_report_image_model::DisasterImagePayload;
+
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_reports)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -35,6 +37,18 @@ pub struct CreateDisasterReport {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateDisasterReportWithImage {
+    pub title: String,
+    pub description: Option<String>,
+    pub street: Option<String>,
+    pub city: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub is_anon: Option<bool>,
+    pub images: Vec<DisasterImagePayload>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDisasterReportPayload {
     pub title: String,
     pub description: Option<String>,
@@ -43,16 +57,17 @@ pub struct CreateDisasterReportPayload {
     pub lat: f64,
     pub lng: f64,
     pub is_anon: Option<bool>,
+    pub images: Vec<DisasterImagePayload>,
 }
 
-impl CreateDisasterReportPayload {
-    pub fn into_record(self, user_id: Uuid) -> CreateDisasterReport {
+impl CreateDisasterReportWithImage {
+    pub fn to_record(&self, user_id: Uuid) -> CreateDisasterReport {
         CreateDisasterReport {
             user_id,
-            title: self.title,
-            description: self.description,
-            street: self.street,
-            city: self.city,
+            title: self.title.clone(),
+            description: self.description.clone(),
+            street: self.street.clone(),
+            city: self.city.clone(),
             lat: self.lat,
             lng: self.lng,
             is_anon: self.is_anon,
