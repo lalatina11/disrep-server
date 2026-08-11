@@ -1,6 +1,5 @@
 use axum::{
     Router,
-    extract::DefaultBodyLimit,
     middleware::from_fn,
     routing::{get, patch, post},
 };
@@ -27,7 +26,6 @@ impl DisasterRoutes {
         Router::new()
             .route("/", post(DisasterHandler::create))
             .merge(Self::admin_authority())
-            .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
             .layer(from_fn(AuthMiddleware::handle))
     }
 
