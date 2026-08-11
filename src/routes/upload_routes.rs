@@ -1,4 +1,4 @@
-use axum::{Router, routing::post};
+use axum::{Router, extract::DefaultBodyLimit, routing::post};
 
 use crate::handlers::upload_handler::UploadHandler;
 
@@ -9,5 +9,6 @@ impl UploadRoutes {
         Router::new()
             .route("/image", post(UploadHandler::image))
             .route("/video", post(UploadHandler::video))
+            .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
     }
 }

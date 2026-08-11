@@ -70,7 +70,7 @@ impl UploadService {
             println!("Error while uploading image:\n{:?}", err);
         }
         if let Ok(file) = buff {
-            SupabaseService::upload_file(file).await?;
+            return SupabaseService::upload_file(file).await;
         }
         Err(ServiceError::internal())
     }
