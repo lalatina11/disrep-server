@@ -1,4 +1,13 @@
+use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{
+    error::ServiceError,
+    models::user_model::{NewUser, UserModel},
+    service::user_service::UserService,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignUpAndInSuccessResponse {
@@ -8,6 +17,23 @@ pub struct SignUpAndInSuccessResponse {
     pub expires_at: i64,
     pub refresh_token: String,
     pub user: User,
+}
+
+impl SignUpAndInSuccessResponse {
+    pub async fn create_user(&self) -> Result<UserModel, ServiceError> {
+        UserService::create_user(NewUser {
+            display_name: self.user.user_metadata.display_name.clone(),
+            email: self.user.email.clone(),
+            id: Uuid::from_str(&self.user.id).unwrap_or(uuid::Uuid::new_v4()),
+            role: self.user.user_metadata.role.clone(),
+            avatar: None,
+        })
+        .await
+    }
+
+    pub async fn check_existing_user(&self) -> Result<UserModel, ServiceError> {
+        UserService::get_user_by_id(Uuid::from_str(&self.user.id).unwrap_or(Uuid::new_v4())).await
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

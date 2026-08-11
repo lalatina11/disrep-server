@@ -8,7 +8,7 @@ use crate::{
     error::{ServiceError, supabase_error::SupabaseAuthErrorResponse},
     models::{
         auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
-        user_model::{NewUser, UserModel},
+        user_model::UserModel,
     },
     service::{supabase_service::SupabaseService, user_service::UserService},
     utils::responses::auth_responses::{GetUserSuccessResponse, SignUpAndInSuccessResponse},
@@ -33,14 +33,7 @@ impl AuthService {
             if let Ok(is_sign_up_success) =
                 serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
             {
-                let create_user = UserService::create_user(NewUser {
-                    display_name: is_sign_up_success.user.user_metadata.display_name,
-                    email: is_sign_up_success.user.email,
-                    id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
-                    role: is_sign_up_success.user.user_metadata.role,
-                    avatar: None,
-                })
-                .await;
+                let create_user = is_sign_up_success.create_user().await;
                 if let Ok(user_model) = create_user {
                     return Ok(user_model.to_payload(is_sign_up_success.access_token));
                 }
@@ -62,22 +55,11 @@ impl AuthService {
             if let Ok(is_sign_in_success) =
                 serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
             {
-                let existing_user = UserService::get_user_by_id(
-                    Uuid::from_str(&is_sign_in_success.user.id).unwrap_or(Uuid::new_v4()),
-                )
-                .await;
+                let existing_user = is_sign_in_success.check_existing_user().await;
                 if let Ok(user_model) = existing_user {
                     return Ok(user_model.to_payload(is_sign_in_success.access_token));
                 } else {
-                    let create_user = UserService::create_user(NewUser {
-                        display_name: is_sign_in_success.user.user_metadata.display_name,
-                        email: is_sign_in_success.user.email,
-                        id: Uuid::from_str(&is_sign_in_success.user.id)
-                            .unwrap_or(uuid::Uuid::new_v4()),
-                        role: is_sign_in_success.user.user_metadata.role,
-                        avatar: None,
-                    })
-                    .await;
+                    let create_user = is_sign_in_success.create_user().await;
                     if let Ok(user_model) = create_user {
                         return Ok(user_model.to_payload(is_sign_in_success.access_token));
                     }
