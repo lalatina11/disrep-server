@@ -31,6 +31,12 @@ impl DisasterService {
         user_id: Uuid,
         mut payload: CreateDisasterReportWithImage,
     ) -> Result<DisasterReportsModel, ServiceError> {
+        if payload.attachment.len() < 1 {
+            return Err(ServiceError::unprocessable(Some(
+                "Please insert an image or video".to_string(),
+            )));
+        }
+
         let user = UserService::get_user_by_id(user_id).await?;
 
         if user.is_authorize_as_admin() {
@@ -38,12 +44,6 @@ impl DisasterService {
         }
 
         use crate::schema::disaster_reports;
-
-        if payload.attachment.len() < 1 {
-            return Err(ServiceError::unprocessable(Some(
-                "Please insert an image or video".to_string(),
-            )));
-        }
 
         let conn = &mut Database::establish_connection();
 
