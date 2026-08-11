@@ -88,29 +88,43 @@ impl SupabaseService {
         Ok(res)
     }
 
-    pub async fn upload_image(image: FileFormData) -> Result<SupabaseStorageResult, ServiceError> {
-        match image.bytes {
+    pub async fn upload_file(file: FileFormData) -> Result<SupabaseStorageResult, ServiceError> {
+        match file.bytes {
             None => Err(ServiceError::internal()),
             Some(bytes) => {
                 let supabase = SupabaseConfig::new();
                 let image_name = CommonUtility::generate_unique_name();
                 let client = Client::new();
                 let url = format!(
-                    "{}/object/disaster-image/{}",
+                    "{}/object/disaster-report-img-vid/{}",
                     supabase.storage_base_url, image_name
                 );
 
-                let content_type = match image.content_type.as_deref() {
+                let content_type = match file.content_type.as_deref() {
                     Some("application/octet-stream") | None => {
-                        let lower_name = image.name.to_lowercase();
-                        if lower_name.ends_with(".png") {
-                            "image/png"
-                        } else if lower_name.ends_with(".webp") {
-                            "image/webp"
-                        } else if lower_name.ends_with(".gif") {
-                            "image/gif"
+                        let lower_name = file.name.to_lowercase();
+                        if lower_name.starts_with("image") {
+                            if lower_name.ends_with(".png") {
+                                "image/png"
+                            } else if lower_name.ends_with(".webp") {
+                                "image/webp"
+                            } else if lower_name.ends_with(".gif") {
+                                "image/gif"
+                            } else {
+                                "image/jpeg"
+                            }
+                        } else if lower_name.ends_with(".mp4") {
+                            "video/mp4"
+                        } else if lower_name.ends_with(".webm") {
+                            "video/webm"
+                        } else if lower_name.ends_with(".mov") {
+                            "video/quicktime"
+                        } else if lower_name.ends_with(".mkv") {
+                            "video/x-matroska"
+                        } else if lower_name.ends_with(".avi") {
+                            "video/x-msvideo"
                         } else {
-                            "image/jpeg"
+                            "video/mp4"
                         }
                     }
                     Some(ct) => ct,

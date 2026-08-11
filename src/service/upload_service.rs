@@ -1,6 +1,10 @@
 use axum::extract::Multipart;
 
-use crate::{error::ServiceError, models::form_data::FileFormData};
+use crate::{
+    error::ServiceError, models::form_data::FileFormData,
+    service::supabase_service::SupabaseService,
+    utils::responses::storage_response::SupabaseStorageResult,
+};
 
 pub struct UploadService;
 
@@ -57,5 +61,17 @@ impl UploadService {
         }
 
         Ok(file)
+    }
+
+    pub async fn upload_image(multipart: Multipart) -> Result<SupabaseStorageResult, ServiceError> {
+        let buff = Self::parse_image_multipart(multipart).await;
+
+        if let Err(err) = &buff {
+            println!("Error while uploading image:\n{:?}", err);
+        }
+        if let Ok(file) = buff {
+            SupabaseService::upload_file(file).await?;
+        }
+        Err(ServiceError::internal())
     }
 }

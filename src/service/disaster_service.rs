@@ -120,7 +120,7 @@ impl DisasterService {
         multipart: Multipart,
     ) -> Result<DisasterReportsModel, ServiceError> {
         let (mut payload, image) = Self::parse_multipart(multipart).await?;
-        let storage_res = SupabaseService::upload_image(image).await?;
+        let storage_res = SupabaseService::upload_file(image).await?;
 
         payload.image = CommonUtility::generate_image_url(storage_res.key.clone());
         payload.image_storage_url = storage_res.key;
