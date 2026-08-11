@@ -68,6 +68,19 @@ impl AuthService {
                 .await;
                 if let Ok(user_model) = existing_user {
                     return Ok(user_model.to_payload(is_sign_in_success.access_token));
+                } else {
+                    let create_user = UserService::create_user(NewUser {
+                        display_name: is_sign_in_success.user.user_metadata.display_name,
+                        email: is_sign_in_success.user.email,
+                        id: Uuid::from_str(&is_sign_in_success.user.id)
+                            .unwrap_or(uuid::Uuid::new_v4()),
+                        role: is_sign_in_success.user.user_metadata.role,
+                        avatar: None,
+                    })
+                    .await;
+                    if let Ok(user_model) = create_user {
+                        return Ok(user_model.to_payload(is_sign_in_success.access_token));
+                    }
                 }
                 return Err(ServiceError::internal());
             }
