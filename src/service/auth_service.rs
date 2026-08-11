@@ -33,7 +33,7 @@ impl AuthService {
             if let Ok(is_sign_up_success) =
                 serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
             {
-                let user_model_parsing = UserService::create_user(NewUser {
+                let create_user = UserService::create_user(NewUser {
                     display_name: is_sign_up_success.user.user_metadata.display_name,
                     email: is_sign_up_success.user.email,
                     id: Uuid::from_str(&is_sign_up_success.user.id).unwrap_or(uuid::Uuid::new_v4()),
@@ -41,7 +41,7 @@ impl AuthService {
                     avatar: None,
                 })
                 .await;
-                if let Ok(user_model) = user_model_parsing {
+                if let Ok(user_model) = create_user {
                     return Ok(user_model.to_payload(is_sign_up_success.access_token));
                 }
                 return Err(ServiceError::internal());
