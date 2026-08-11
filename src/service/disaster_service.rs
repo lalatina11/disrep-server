@@ -31,6 +31,13 @@ impl DisasterService {
         payload: CreateDisasterReportWithImage,
     ) -> Result<DisasterReportsModel, ServiceError> {
         use crate::schema::disaster_reports;
+
+        if payload.images.len() < 1 {
+            return Err(ServiceError::unprocessable(Some(
+                "Please insert an image".to_string(),
+            )));
+        }
+
         let conn = &mut Database::establish_connection();
 
         let disaster_record = payload.to_record(user_id);
