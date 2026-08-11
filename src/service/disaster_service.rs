@@ -7,8 +7,8 @@ use uuid::Uuid;
 use crate::{
     config::database_config::Database,
     error::ServiceError,
-    models::disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel},
-    service::disaster_image_service::DisasterImageService,
+    models::disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
+    service::{disaster_image_service::DisasterImageService, user_service::UserService},
 };
 
 pub struct DisasterService;
@@ -29,8 +29,14 @@ impl DisasterService {
 
     pub async fn create(
         user_id: Uuid,
-        payload: CreateDisasterReportWithImage,
+        mut payload: CreateDisasterReportWithImage,
     ) -> Result<DisasterReportsModel, ServiceError> {
+        let user = UserService::get_user_by_id(user_id).await?;
+
+        if user.is_authorize_as_admin() {
+            payload.status = Some(DisasterStatus::New.to_string())
+        }
+
         use crate::schema::disaster_reports;
 
         if payload.attachment.len() < 1 {

@@ -3,6 +3,28 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+// 'pending', 'new', 'aid_dispatched', 'aid_arrived', 'resolved'
+
+pub enum DisasterStatus {
+    Pending,
+    New,
+    AidDispatched,
+    AidArrived,
+    Resolved,
+}
+
+impl DisasterStatus {
+    pub fn to_string(self) -> String {
+        match self {
+            DisasterStatus::AidArrived => "aid_arrived".to_string(),
+            DisasterStatus::Pending => "pending".to_string(),
+            DisasterStatus::New => "new".to_string(),
+            DisasterStatus::AidDispatched => "aid_dispatched".to_string(),
+            DisasterStatus::Resolved => "resolved".to_string(),
+        }
+    }
+}
+
 use crate::models::disaster_report_image_model::DisasterImagePayload;
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
@@ -34,6 +56,7 @@ pub struct CreateDisasterReport {
     pub lat: f64,
     pub lng: f64,
     pub is_anon: Option<bool>,
+    pub status: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,6 +69,7 @@ pub struct CreateDisasterReportWithImage {
     pub lng: f64,
     pub is_anon: Option<bool>,
     pub attachment: Vec<DisasterImagePayload>,
+    pub status: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -71,6 +95,10 @@ impl CreateDisasterReportWithImage {
             lat: self.lat,
             lng: self.lng,
             is_anon: self.is_anon,
+            status: self
+                .status
+                .clone()
+                .unwrap_or(DisasterStatus::Pending.to_string()),
         }
     }
 }

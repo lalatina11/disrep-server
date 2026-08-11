@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::models::auth_model::AuthPayload;
+use crate::{constants::ADMIN_ROLES, models::auth_model::AuthPayload};
 
 #[derive(Clone, Debug, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::users)]
@@ -17,6 +17,12 @@ pub struct UserModel {
     pub avatar_storage_url: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+impl UserModel {
+    pub fn is_authorize_as_admin(&self) -> bool {
+        ADMIN_ROLES.contains(&self.role.as_str())
+    }
 }
 
 impl UserModel {

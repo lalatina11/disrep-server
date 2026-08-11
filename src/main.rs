@@ -3,6 +3,7 @@ use core::panic;
 use crate::{config::AppConfig, routes::AppRoutes};
 
 pub mod config;
+pub mod constants;
 pub mod error;
 pub mod handlers;
 pub mod middleware;
