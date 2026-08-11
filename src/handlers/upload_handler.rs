@@ -1,6 +1,23 @@
+use axum::extract::Multipart;
+
+use crate::{
+    service::upload_service::UploadService,
+    utils::responses::{
+        api_responses::ApiResponseReturnTypeWithHeader, storage_response::SupabaseStorageResult,
+    },
+};
+
 pub struct UploadHandler;
 
 impl UploadHandler {
-    pub async fn image() {}
+    pub async fn image(
+        multipart: Multipart,
+    ) -> ApiResponseReturnTypeWithHeader<SupabaseStorageResult> {
+        let service = UploadService::upload_image(multipart).await;
+        match service {
+            Err(err) => err.to_handler_error(),
+            Ok(res) => res.into_response(),
+        }
+    }
     pub async fn video() {}
 }

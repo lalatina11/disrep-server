@@ -1,6 +1,10 @@
 use axum::extract::Multipart;
 
-use crate::{error::ServiceError, models::form_data::FileFormData};
+use crate::{
+    error::ServiceError, models::form_data::FileFormData,
+    service::supabase_service::SupabaseService,
+    utils::responses::storage_response::SupabaseStorageResult,
+};
 
 pub struct UploadService;
 
@@ -57,5 +61,24 @@ impl UploadService {
         }
 
         Ok(file)
+    }
+
+    pub async fn upload_image(multipart: Multipart) -> Result<SupabaseStorageResult, ServiceError> {
+        let buff = Self::parse_image_multipart(multipart).await;
+
+        if let Err(err) = &buff {
+            println!("Error while uploading image:\n{:?}", err);
+        }
+        if let Ok(file) = buff {
+            if let Some(content_type) = file.content_type.clone() {
+                if !content_type.starts_with("image") {
+                    return Err(ServiceError::unprocessable(Some(
+                        "Only image are allowed".to_string(),
+                    )));
+                }
+            }
+            return SupabaseService::upload_file(file).await;
+        }
+        Err(ServiceError::internal())
     }
 }
