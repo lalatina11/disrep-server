@@ -2,7 +2,6 @@ use axum::{Extension, extract::Path, response::IntoResponse};
 use reqwest::StatusCode;
 
 use crate::{
-    middleware::admin_middleware::ALLOWED_ADMIN_ROLES,
     models::{
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel},
         user_model::UserModel,
@@ -53,8 +52,7 @@ impl DisasterHandler {
                     return ApiResponse::success(Some(disaster), None, None);
                 }
                 if let Some(user) = authenticated {
-                    if disaster.status == "new" && ALLOWED_ADMIN_ROLES.contains(&user.role.as_str())
-                    {
+                    if disaster.status == "new" && user.is_authorize_as_admin() {
                         return ApiResponse::success(Some(disaster), None, None);
                     }
                 }
