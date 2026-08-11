@@ -11,3 +11,10 @@ pub struct DisasterReportsImageModel {
     pub disaster_report_id: Uuid,
     pub url: String,
 }
+
+#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_report_images)]
+pub struct DisasterReportsImageModelPayload {
+    pub disaster_report_id: Uuid,
+    pub url: String,
+}
