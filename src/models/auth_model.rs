@@ -24,9 +24,9 @@ pub struct SignUpPayload {
 
 #[derive(Serialize, Deserialize, Validate)]
 pub struct SignInPayload {
-    #[validate(email)]
+    #[validate(email(message = "Please use a valid email"))]
     pub email: String,
-    #[validate(length(min = 8, max = 32))]
+    #[validate(length(min = 8, max = 32, message = "must between 8-32 characters"))]
     pub password: String,
 }
 
