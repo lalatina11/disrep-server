@@ -1,4 +1,4 @@
-use axum::{Extension, extract::Path, response::IntoResponse};
+use axum::{Extension, extract::Path};
 use reqwest::StatusCode;
 
 use crate::{
@@ -6,7 +6,7 @@ use crate::{
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel},
         user_model::UserModel,
     },
-    service::disaster_service::DisasterService,
+    service::disaster_service::{DisasterService, DisasterWithAllRelations},
     utils::{
         request::json_parser::JsonParser,
         responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
@@ -16,7 +16,7 @@ use crate::{
 pub struct DisasterHandler;
 
 impl DisasterHandler {
-    pub async fn get_all() -> impl IntoResponse {
+    pub async fn get_all() -> ApiResponseReturnTypeWithHeader<Vec<DisasterWithAllRelations>> {
         let service = DisasterService::get_all();
         match service {
             Ok(data) => ApiResponse::success(Some(data), None, None),
@@ -42,18 +42,18 @@ impl DisasterHandler {
     pub async fn get_by_id(
         authenticated: Option<Extension<UserModel>>,
         Path(id): Path<uuid::Uuid>,
-    ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
+    ) -> ApiResponseReturnTypeWithHeader<DisasterWithAllRelations> {
         let authenticated = authenticated.map(|Extension(user)| user);
         let service = DisasterService::get_by_id(id).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(disaster) => {
-                if disaster.status != "new" {
-                    return ApiResponse::success(Some(disaster), None, None);
+            Ok(data) => {
+                if data.disaster.status != "new" {
+                    return ApiResponse::success(Some(data), None, None);
                 }
                 if let Some(user) = authenticated {
-                    if disaster.status == "new" && user.is_authorize_as_admin() {
-                        return ApiResponse::success(Some(disaster), None, None);
+                    if data.disaster.status == "new" && user.is_authorize_as_admin() {
+                        return ApiResponse::success(Some(data), None, None);
                     }
                 }
                 let status = StatusCode::NOT_FOUND;

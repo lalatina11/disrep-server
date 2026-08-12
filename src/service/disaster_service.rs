@@ -116,20 +116,37 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
+    pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterWithAllRelations, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports::dsl::*;
-        let res: Result<DisasterReportsModel, DieselError> = disaster_reports
+        use crate::schema::{disaster_report_images, disaster_reports, users};
+        let res: Result<(DisasterReportsModel, UserModel), DieselError> = disaster_reports::table
             .find(disaster_id)
-            .select(DisasterReportsModel::as_select())
+            .inner_join(users::table)
+            .select((DisasterReportsModel::as_select(), UserModel::as_select()))
             .first(conn);
 
-        match res {
-            Err(_) => Err(ServiceError::not_found(Some(
-                "Disaster Report was not found".to_string(),
-            ))),
-            Ok(data) => Ok(data),
+        if let Err(_) = res {
+            return Err(ServiceError::not_found(Some(
+                "Disaster not found".to_string(),
+            )));
         }
+
+        if let Ok((disaster, author)) = res {
+            let images_res: Result<Vec<DisasterReportImageModel>, DieselError> =
+                disaster_report_images::table
+                    .filter(disaster_report_images::columns::disaster_report_id.eq(disaster.id))
+                    .select(DisasterReportImageModel::as_select())
+                    .load(conn);
+            if let Ok(images) = images_res {
+                return Ok(DisasterWithAllRelations {
+                    disaster,
+                    author,
+                    images,
+                });
+            }
+        }
+
+        Err(ServiceError::internal())
     }
 
     pub async fn approve(_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
@@ -138,7 +155,7 @@ impl DisasterService {
         let _disaster = Self::get_by_id(_id).await?;
 
         let res: Result<DisasterReportsModel, DieselError> =
-            diesel::update(disaster_reports.find(_disaster.id))
+            diesel::update(disaster_reports.find(_disaster.disaster.id))
                 .set((status.eq("new".to_string()), updated_at.eq(Utc::now())))
                 .returning(DisasterReportsModel::as_returning())
                 .get_result(conn);
