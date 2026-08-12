@@ -2,8 +2,12 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::{Validate, ValidationError};
 
-use crate::{constants::ADMIN_ROLES, models::auth_model::AuthPayload};
+use crate::{
+    constants::{ADMIN_ROLES, ROLE_LIST},
+    models::auth_model::AuthPayload,
+};
 
 #[derive(Clone, Debug, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::users)]
@@ -34,12 +38,20 @@ impl UserModel {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Insertable)]
+#[derive(Clone, Debug, Serialize, Deserialize, Insertable, Validate)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser {
     pub id: Uuid,
     pub email: String,
     pub display_name: String,
+    #[validate(custom(function = "validate_user_role"))]
     pub role: String,
     pub avatar: Option<String>,
+}
+
+fn validate_user_role(role: &str) -> Result<(), ValidationError> {
+    if !ROLE_LIST.contains(&role) {
+        return Err(ValidationError::new("Invalid user role"));
+    }
+    Ok(())
 }
