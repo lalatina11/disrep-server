@@ -20,7 +20,6 @@ pub struct AuthService;
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
         payload.validate()?;
-        payload.data.validate()?;
 
         let payload = SignUpPayload {
             email: payload.email,
@@ -30,6 +29,8 @@ impl AuthService {
                 display_name: payload.data.display_name,
             },
         };
+
+        payload.data.validate()?;
 
         let res = SupabaseService::sign_up_user(payload).await;
 
