@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use validator::Validate;
 
 use axum::http::{HeaderMap, header as HeaderType};
 use uuid::Uuid;
@@ -18,6 +19,8 @@ pub struct AuthService;
 
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
+        payload.validate()?;
+
         let payload = SignUpPayload {
             email: payload.email,
             password: payload.password,
@@ -26,6 +29,8 @@ impl AuthService {
                 display_name: payload.data.display_name,
             },
         };
+
+        payload.data.validate()?;
 
         let res = SupabaseService::sign_up_user(payload).await;
 
@@ -49,6 +54,8 @@ impl AuthService {
     }
 
     pub async fn sign_in(payload: SignInPayload) -> Result<AuthPayload, ServiceError> {
+        payload.validate()?;
+
         let res = SupabaseService::sign_in_user(payload).await;
 
         if let Ok(res_text) = res {

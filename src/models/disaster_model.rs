@@ -2,8 +2,7 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-// 'pending', 'new', 'aid_dispatched', 'aid_arrived', 'resolved'
+use validator::Validate;
 
 pub enum DisasterStatus {
     Pending,
@@ -45,42 +44,62 @@ pub struct DisasterReportsModel {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
+#[derive(Debug, Clone, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = crate::schema::disaster_reports)]
 pub struct CreateDisasterReport {
     pub user_id: Uuid,
+    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
     pub title: String,
+    #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
+    #[validate(length(min = 3, message = "Street must be at least 3 characters"))]
     pub street: Option<String>,
+    #[validate(length(min = 2, message = "City is required"))]
     pub city: String,
+    #[validate(range(min = -90.0, max = 90.0, message = "Latitude must be between -90 and 90"))]
     pub lat: f64,
+    #[validate(range(min = -180.0, max = 180.0, message = "Longitude must be between -180 and 180"))]
     pub lng: f64,
     pub is_anon: Option<bool>,
     pub status: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateDisasterReportWithImage {
+    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
     pub title: String,
+    #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
+    #[validate(length(min = 3, message = "Street must be at least 3 characters"))]
     pub street: Option<String>,
+    #[validate(length(min = 2, message = "City is required"))]
     pub city: String,
+    #[validate(range(min = -90.0, max = 90.0, message = "Latitude must be between -90 and 90"))]
     pub lat: f64,
+    #[validate(range(min = -180.0, max = 180.0, message = "Longitude must be between -180 and 180"))]
     pub lng: f64,
     pub is_anon: Option<bool>,
+    #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
     pub attachment: Vec<DisasterImagePayload>,
     pub status: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateDisasterReportPayload {
+    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
     pub title: String,
+    #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
+    #[validate(length(min = 3, message = "Street must be at least 3 characters"))]
     pub street: Option<String>,
+    #[validate(length(min = 2, message = "City is required"))]
     pub city: String,
+    #[validate(range(min = -90.0, max = 90.0, message = "Latitude must be between -90 and 90"))]
     pub lat: f64,
+    #[validate(range(min = -180.0, max = 180.0, message = "Longitude must be between -180 and 180"))]
     pub lng: f64,
     pub is_anon: Option<bool>,
+    #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
     pub images: Vec<DisasterImagePayload>,
 }
 

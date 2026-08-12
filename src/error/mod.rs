@@ -56,6 +56,26 @@ impl From<axum::extract::multipart::MultipartError> for ServiceError {
     }
 }
 
+impl From<validator::ValidationErrors> for ServiceError {
+    fn from(err: validator::ValidationErrors) -> Self {
+        let message = if let Some((field, errors)) = err.field_errors().into_iter().next() {
+            if let Some(first_err) = errors.first() {
+                if let Some(ref msg) = first_err.message {
+                    msg.to_string()
+                } else {
+                    format!("Invalid {}", field)
+                }
+            } else {
+                "Invalid input".to_string()
+            }
+        } else {
+            "Invalid input".to_string()
+        };
+
+        Self::unprocessable(Some(message))
+    }
+}
+
 impl ServiceError {
     pub fn to_handler_error<T: Serialize>(&self) -> ApiResponseReturnTypeWithHeader<T> {
         ApiResponse::error(

@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 use crate::{constants::ADMIN_ROLES, models::auth_model::AuthPayload};
 
@@ -34,7 +35,7 @@ impl UserModel {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Insertable)]
+#[derive(Clone, Debug, Serialize, Deserialize, Insertable, Validate)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser {
     pub id: Uuid,

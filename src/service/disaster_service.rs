@@ -3,6 +3,7 @@ use diesel::{
     ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper, result::Error as DieselError,
 };
 use uuid::Uuid;
+use validator::Validate;
 
 use crate::{
     config::database_config::Database,
@@ -31,18 +32,7 @@ impl DisasterService {
         user_id: Uuid,
         mut payload: CreateDisasterReportWithImage,
     ) -> Result<DisasterReportsModel, ServiceError> {
-        if payload.attachment.len() < 1 {
-            return Err(ServiceError::unprocessable(Some(
-                "Please insert an image or video".to_string(),
-            )));
-        }
-        for at in &payload.attachment {
-            if at.url.trim().is_empty() {
-                return Err(ServiceError::unprocessable(Some(
-                    "Invalid attachment URL".to_string(),
-                )));
-            }
-        }
+        payload.validate()?;
 
         let user = UserService::get_user_by_id(user_id).await?;
 
@@ -68,7 +58,9 @@ impl DisasterService {
 
         if let Ok(disaster) = insert_disaster_res {
             for attachment in payload.attachment {
+                attachment.validate()?;
                 let payload = attachment.into_insert(disaster.id);
+
                 let res = DisasterImageService::insert(payload).await;
                 if let Err(_) = res {
                     return Err(ServiceError::internal());
