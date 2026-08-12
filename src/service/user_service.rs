@@ -4,6 +4,7 @@ use crate::{
     models::user_model::{NewUser, UserModel},
     schema::users as users_table,
 };
+use validator::Validate;
 
 use diesel::{prelude::*, result::Error};
 use uuid::Uuid;
@@ -11,6 +12,7 @@ use uuid::Uuid;
 pub struct UserService;
 impl UserService {
     pub async fn create_user(payload: NewUser) -> Result<UserModel, ServiceError> {
+        payload.validate()?;
         let conn = &mut Database::establish_connection();
         let payload = NewUser {
             display_name: payload.display_name.clone(),
