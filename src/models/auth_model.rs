@@ -1,30 +1,39 @@
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 use crate::{
+    constants::ROLE_LIST,
     models::user_model::UserModel,
     utils::responses::auth_responses::{AppMetadata, GetUserIdentity, GetUserMetadata},
 };
 
 #[derive(Serialize, Deserialize, Validate, Debug)]
 pub struct SignUpAdditionalData {
-    #[validate(length(min = 3, max = 128))]
+    #[validate(length(min = 3, max = 128, message = "User name must be 3-128 characters"))]
     pub display_name: String,
+    #[validate(custom(function = "validate_user_role"))]
     pub role: Option<String>,
+}
+
+fn validate_user_role(role: &str) -> Result<(), ValidationError> {
+    if !ROLE_LIST.contains(&role) {
+        return Err(ValidationError::new("Invalid user role"));
+    }
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize, Validate, Debug)]
 pub struct SignUpPayload {
-    #[validate(email)]
+    #[validate(email(message = "Please enter a valid email"))]
     pub email: String,
-    #[validate(length(min = 8, max = 32))]
+    #[validate(length(min = 8, max = 32, message = "must between 8-32 characters"))]
     pub password: String,
     pub data: SignUpAdditionalData,
 }
 
 #[derive(Serialize, Deserialize, Validate)]
 pub struct SignInPayload {
-    #[validate(email(message = "Please use a valid email"))]
+    #[validate(email(message = "Please enter a valid email"))]
     pub email: String,
     #[validate(length(min = 8, max = 32, message = "must between 8-32 characters"))]
     pub password: String,

@@ -20,6 +20,7 @@ pub struct AuthService;
 impl AuthService {
     pub async fn sign_up(payload: SignUpPayload) -> Result<AuthPayload, ServiceError> {
         payload.validate()?;
+        payload.data.validate()?;
 
         let payload = SignUpPayload {
             email: payload.email,
