@@ -17,7 +17,6 @@ pub struct DisasterReportsImageModel {
 #[diesel(table_name = crate::schema::disaster_report_images)]
 pub struct DisasterReportsImageModelPayload {
     pub disaster_report_id: Uuid,
-    #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub url: String,
 }
 

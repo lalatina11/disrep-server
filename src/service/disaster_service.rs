@@ -58,8 +58,8 @@ impl DisasterService {
 
         if let Ok(disaster) = insert_disaster_res {
             for attachment in payload.attachment {
+                attachment.validate()?;
                 let payload = attachment.into_insert(disaster.id);
-                payload.validate()?;
 
                 let res = DisasterImageService::insert(payload).await;
                 if let Err(_) = res {
