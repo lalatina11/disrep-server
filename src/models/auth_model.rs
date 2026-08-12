@@ -26,7 +26,7 @@ fn validate_user_role(role: &str) -> Result<(), ValidationError> {
 pub struct SignUpPayload {
     #[validate(email(message = "Please enter a valid email"))]
     pub email: String,
-    #[validate(length(min = 8, max = 32, message = "must between 8-32 characters"))]
+    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
     pub password: String,
     pub data: SignUpAdditionalData,
 }
@@ -35,7 +35,7 @@ pub struct SignUpPayload {
 pub struct SignInPayload {
     #[validate(email(message = "Please enter a valid email"))]
     pub email: String,
-    #[validate(length(min = 8, max = 32, message = "must between 8-32 characters"))]
+    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
     pub password: String,
 }
 
