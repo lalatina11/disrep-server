@@ -27,9 +27,10 @@ impl UserModel {
 }
 
 impl UserModel {
-    pub fn to_payload(self, access_token: String) -> AuthPayload {
+    pub fn to_payload(self, access_token: String, refresh_token: String) -> AuthPayload {
         AuthPayload {
             access_token,
+            refresh_token,
             user: self,
         }
     }

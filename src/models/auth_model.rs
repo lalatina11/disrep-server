@@ -60,5 +60,6 @@ pub struct UserPayload {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AuthPayload {
     pub access_token: String,
+    pub refresh_token: String,
     pub user: UserModel,
 }

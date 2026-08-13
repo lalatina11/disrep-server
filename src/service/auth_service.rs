@@ -40,7 +40,9 @@ impl AuthService {
             {
                 let create_user = is_sign_up_success.create_user().await;
                 if let Ok(user_model) = create_user {
-                    return Ok(user_model.to_payload(is_sign_up_success.access_token));
+                    let access_token = is_sign_up_success.access_token;
+                    let refresh_token = is_sign_up_success.refresh_token;
+                    return Ok(user_model.to_payload(access_token, refresh_token));
                 }
                 return Err(ServiceError::internal());
             }
@@ -64,11 +66,15 @@ impl AuthService {
             {
                 let existing_user = is_sign_in_success.check_existing_user().await;
                 if let Ok(user_model) = existing_user {
-                    return Ok(user_model.to_payload(is_sign_in_success.access_token));
+                    let access_token = is_sign_in_success.access_token;
+                    let refresh_token = is_sign_in_success.refresh_token;
+                    return Ok(user_model.to_payload(access_token, refresh_token));
                 } else {
                     let create_user = is_sign_in_success.create_user().await;
                     if let Ok(user_model) = create_user {
-                        return Ok(user_model.to_payload(is_sign_in_success.access_token));
+                        let access_token = is_sign_in_success.access_token;
+                        let refresh_token = is_sign_in_success.refresh_token;
+                        return Ok(user_model.to_payload(access_token, refresh_token));
                     }
                 }
                 return Err(ServiceError::internal());
