@@ -9,7 +9,8 @@ use crate::{
     error::{ServiceError, supabase_error::SupabaseAuthErrorResponse},
     models::{
         auth_model::{
-            AuthPayload, RefreshTokenPayload, SignInPayload, SignUpAdditionalData, SignUpPayload,
+            AuthPayload, AuthToken, RefreshTokenPayload, SignInPayload, SignUpAdditionalData,
+            SignUpPayload,
         },
         user_model::UserModel,
     },
@@ -44,7 +45,10 @@ impl AuthService {
                 if let Ok(user_model) = create_user {
                     let access_token = is_sign_up_success.access_token;
                     let refresh_token = is_sign_up_success.refresh_token;
-                    return Ok(user_model.to_payload(access_token, refresh_token));
+                    return Ok(user_model.to_payload(AuthToken {
+                        access_token,
+                        refresh_token,
+                    }));
                 }
                 return Err(ServiceError::internal());
             }
@@ -70,13 +74,19 @@ impl AuthService {
                 if let Ok(user_model) = existing_user {
                     let access_token = is_sign_in_success.access_token;
                     let refresh_token = is_sign_in_success.refresh_token;
-                    return Ok(user_model.to_payload(access_token, refresh_token));
+                    return Ok(user_model.to_payload(AuthToken {
+                        access_token,
+                        refresh_token,
+                    }));
                 } else {
                     let create_user = is_sign_in_success.create_user().await;
                     if let Ok(user_model) = create_user {
                         let access_token = is_sign_in_success.access_token;
                         let refresh_token = is_sign_in_success.refresh_token;
-                        return Ok(user_model.to_payload(access_token, refresh_token));
+                        return Ok(user_model.to_payload(AuthToken {
+                            access_token,
+                            refresh_token,
+                        }));
                     }
                 }
                 return Err(ServiceError::internal());
@@ -148,13 +158,19 @@ impl AuthService {
                 if let Ok(user_model) = existing_user {
                     let access_token = is_sign_in_success.access_token;
                     let refresh_token = is_sign_in_success.refresh_token;
-                    return Ok(user_model.to_payload(access_token, refresh_token));
+                    return Ok(user_model.to_payload(AuthToken {
+                        access_token,
+                        refresh_token,
+                    }));
                 } else {
                     let create_user = is_sign_in_success.create_user().await;
                     if let Ok(user_model) = create_user {
                         let access_token = is_sign_in_success.access_token;
                         let refresh_token = is_sign_in_success.refresh_token;
-                        return Ok(user_model.to_payload(access_token, refresh_token));
+                        return Ok(user_model.to_payload(AuthToken {
+                            access_token,
+                            refresh_token,
+                        }));
                     }
                 }
                 return Err(ServiceError::internal());
