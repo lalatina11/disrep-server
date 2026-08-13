@@ -32,11 +32,11 @@ impl AuthHandler {
                 data.token.refresh_token.clone(),
                 Some(7),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&refresh_token).unwrap(),
             );
@@ -69,11 +69,11 @@ impl AuthHandler {
                 data.token.refresh_token.clone(),
                 Some(7),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&refresh_token).unwrap(),
             );
@@ -112,11 +112,11 @@ impl AuthHandler {
                 data.token.refresh_token.clone(),
                 Some(7),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
             );
-            headers.insert(
+            headers.append(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&refresh_token).unwrap(),
             );
