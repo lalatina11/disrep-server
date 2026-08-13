@@ -48,11 +48,11 @@ impl DisasterHandler {
         match service {
             Err(err) => err.to_handler_error(),
             Ok(data) => {
-                if data.disaster.status != "new" {
+                if data.disaster.status != "pending" {
                     return ApiResponse::success(Some(data), None, None);
                 }
                 if let Some(user) = authenticated {
-                    if data.disaster.status == "new" && user.is_authorize_as_admin() {
+                    if data.disaster.status == "pending" && user.is_authorize_as_admin() {
                         return ApiResponse::success(Some(data), None, None);
                     }
                 }
