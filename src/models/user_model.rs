@@ -4,7 +4,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::{constants::ADMIN_ROLES, models::auth_model::AuthPayload};
+use crate::{
+    constants::ADMIN_ROLES,
+    models::auth_model::{AuthPayload, AuthToken},
+};
 
 #[derive(Clone, Debug, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::users)]
@@ -27,12 +30,9 @@ impl UserModel {
 }
 
 impl UserModel {
-    pub fn to_payload(self, access_token: String, refresh_token: String) -> AuthPayload {
-        AuthPayload {
-            access_token,
-            refresh_token,
-            user: self,
-        }
+    pub fn to_payload(self, token: AuthToken) -> AuthPayload {
+        let user = self;
+        AuthPayload { token, user }
     }
 }
 
