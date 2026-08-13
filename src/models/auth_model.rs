@@ -58,9 +58,14 @@ pub struct UserPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AuthPayload {
+pub struct AuthToken {
     pub access_token: String,
     pub refresh_token: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AuthPayload {
+    pub token: AuthToken,
     pub user: UserModel,
 }
 
