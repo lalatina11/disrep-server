@@ -2,28 +2,74 @@ use chrono::Utc;
 use diesel::{
     ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper, result::Error as DieselError,
 };
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     config::database_config::Database,
     error::ServiceError,
-    models::disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
+    models::{
+        disaster_model::{
+            CreateDisasterReportWithImage, DisasterReportImageModel, DisasterReportsModel,
+            DisasterStatus,
+        },
+        user_model::UserModel,
+    },
     service::{disaster_image_service::DisasterImageService, user_service::UserService},
 };
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DisasterWithAllRelations {
+    pub disaster: DisasterReportsModel,
+    pub images: Vec<DisasterReportImageModel>,
+    pub author: UserModel,
+}
 
 pub struct DisasterService;
 
 impl DisasterService {
-    pub fn get_all() -> Result<Vec<DisasterReportsModel>, ServiceError> {
+    pub fn get_all() -> Result<Vec<DisasterWithAllRelations>, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports::dsl::*;
-        let res: Result<Vec<DisasterReportsModel>, DieselError> = disaster_reports
-            .filter(status.ne("pending"))
-            .select(DisasterReportsModel::as_select())
-            .load(conn);
-        if let Ok(data) = res {
-            return Ok(data);
+        use crate::schema::{disaster_report_images, disaster_reports, users};
+        let report_with_users_res: Result<Vec<(DisasterReportsModel, UserModel)>, DieselError> =
+            disaster_reports::table
+                .filter(disaster_reports::status.ne("pending"))
+                .inner_join(users::table)
+                .select((DisasterReportsModel::as_select(), UserModel::as_select()))
+                .load::<(DisasterReportsModel, UserModel)>(conn);
+
+        if let Ok(reports_with_users) = report_with_users_res {
+            let report_ids: Vec<Uuid> = reports_with_users
+                .iter()
+                .map(|(report, _)| report.id)
+                .collect();
+            let all_images: Result<Vec<DisasterReportImageModel>, DieselError> =
+                disaster_report_images::table
+                    .filter(disaster_report_images::disaster_report_id.eq_any(&report_ids))
+                    .select(DisasterReportImageModel::as_select())
+                    .load::<DisasterReportImageModel>(conn);
+            if let Ok(images) = all_images {
+                let result = reports_with_users
+                    .into_iter()
+                    .map(|(disaster, author)| {
+                        let images = images
+                            .iter()
+                            .filter(|img| {
+                                img.disaster_report_id.to_string() == disaster.id.to_string()
+                            })
+                            .cloned()
+                            .collect();
+
+                        DisasterWithAllRelations {
+                            disaster,
+                            author,
+                            images,
+                        }
+                    })
+                    .collect();
+                return Ok(result);
+            }
         }
         Err(ServiceError::internal())
     }
@@ -72,20 +118,37 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
+    pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterWithAllRelations, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports::dsl::*;
-        let res: Result<DisasterReportsModel, DieselError> = disaster_reports
+        use crate::schema::{disaster_report_images, disaster_reports, users};
+        let res: Result<(DisasterReportsModel, UserModel), DieselError> = disaster_reports::table
             .find(disaster_id)
-            .select(DisasterReportsModel::as_select())
+            .inner_join(users::table)
+            .select((DisasterReportsModel::as_select(), UserModel::as_select()))
             .first(conn);
 
-        match res {
-            Err(_) => Err(ServiceError::not_found(Some(
-                "Disaster Report was not found".to_string(),
-            ))),
-            Ok(data) => Ok(data),
+        if let Err(_) = res {
+            return Err(ServiceError::not_found(Some(
+                "Disaster not found".to_string(),
+            )));
         }
+
+        if let Ok((disaster, author)) = res {
+            let images_res: Result<Vec<DisasterReportImageModel>, DieselError> =
+                disaster_report_images::table
+                    .filter(disaster_report_images::columns::disaster_report_id.eq(disaster.id))
+                    .select(DisasterReportImageModel::as_select())
+                    .load(conn);
+            if let Ok(images) = images_res {
+                return Ok(DisasterWithAllRelations {
+                    disaster,
+                    author,
+                    images,
+                });
+            }
+        }
+
+        Err(ServiceError::internal())
     }
 
     pub async fn approve(_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
@@ -94,7 +157,7 @@ impl DisasterService {
         let _disaster = Self::get_by_id(_id).await?;
 
         let res: Result<DisasterReportsModel, DieselError> =
-            diesel::update(disaster_reports.find(_disaster.id))
+            diesel::update(disaster_reports.find(_disaster.disaster.id))
                 .set((status.eq("new".to_string()), updated_at.eq(Utc::now())))
                 .returning(DisasterReportsModel::as_returning())
                 .get_result(conn);
