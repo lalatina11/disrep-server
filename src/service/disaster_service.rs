@@ -55,9 +55,7 @@ impl DisasterService {
                     .map(|(disaster, author)| {
                         let images = images
                             .iter()
-                            .filter(|img| {
-                                img.disaster_report_id.to_string() == disaster.id.to_string()
-                            })
+                            .filter(|img| &img.disaster_report_id == &disaster.id)
                             .cloned()
                             .collect();
 
