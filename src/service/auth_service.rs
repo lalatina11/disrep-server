@@ -136,8 +136,9 @@ impl AuthService {
         Err(ServiceError::internal())
     }
 
-    pub fn generate_cookie(cookie_name: &str, token: String, day: Option<u64>) -> String {
-        let max_age = day.unwrap_or(1) * 24 * 60 * 60;
+    pub fn generate_cookie(cookie_name: &str, token: String, day: Option<u8>) -> String {
+        let days = day.unwrap_or(3) as u64;
+        let max_age = days * 24 * 60 * 60;
         let is_production = AppEnv::new() == AppEnv::Production;
         let secure_flag = if is_production { "; Secure" } else { "" };
 
@@ -145,6 +146,10 @@ impl AuthService {
             "{}={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
             cookie_name, token, max_age, secure_flag,
         )
+    }
+
+    pub fn generate_clear_cookie(cookie_name: &str) -> String {
+        Self::generate_cookie(cookie_name, "".to_string(), Some(0))
     }
 
     pub async fn refresh_token(payload: RefreshTokenPayload) -> Result<AuthPayload, ServiceError> {

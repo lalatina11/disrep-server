@@ -138,13 +138,22 @@ impl AuthHandler {
     pub async fn sign_out() -> ApiResponseReturnTypeWithHeader<AuthPayload> {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
-        headers.insert(HeaderType::SET_COOKIE, HeaderValue::from_static(""));
+        let access_token_cookie = AuthService::generate_clear_cookie("access_token");
+        let refresh_token_cookie = AuthService::generate_clear_cookie("refresh_token");
+        headers.append(
+            HeaderType::SET_COOKIE,
+            HeaderValue::from_str(&access_token_cookie).unwrap(),
+        );
+        headers.append(
+            HeaderType::SET_COOKIE,
+            HeaderValue::from_str(&refresh_token_cookie).unwrap(),
+        );
         (
             StatusCode::OK,
             headers,
             Json::<ApiResponse<AuthPayload>>(ApiResponse {
                 success: true,
-                message: "Login user success".to_string(),
+                message: "Sign out success".to_string(),
                 data: None,
             }),
         )
