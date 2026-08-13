@@ -148,6 +148,7 @@ impl AuthService {
     }
 
     pub async fn refresh_token(payload: RefreshTokenPayload) -> Result<AuthPayload, ServiceError> {
+        payload.validate()?;
         let res = SupabaseService::refresh_token(payload).await;
 
         if let Ok(res_text) = res {
