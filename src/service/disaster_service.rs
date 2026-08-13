@@ -14,6 +14,7 @@ use crate::{
             CreateDisasterReportWithImage, DisasterReportImageModel, DisasterReportsModel,
             DisasterStatus,
         },
+        disaster_report_image_model::DisasterImagePayload,
         user_model::UserModel,
     },
     service::{disaster_image_service::DisasterImageService, user_service::UserService},
@@ -22,7 +23,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
-    pub images: Vec<DisasterReportImageModel>,
+    pub images: Vec<DisasterImagePayload>,
     pub author: UserModel,
 }
 
@@ -56,7 +57,9 @@ impl DisasterService {
                         let images = images
                             .iter()
                             .filter(|img| &img.disaster_report_id == &disaster.id)
-                            .cloned()
+                            .map(|img| DisasterImagePayload {
+                                url: img.url.clone(),
+                            })
                             .collect();
 
                         DisasterWithAllRelations {
@@ -138,6 +141,10 @@ impl DisasterService {
                     .select(DisasterReportImageModel::as_select())
                     .load(conn);
             if let Ok(images) = images_res {
+                let images = images
+                    .into_iter()
+                    .map(|img| DisasterImagePayload { url: img.url })
+                    .collect();
                 return Ok(DisasterWithAllRelations {
                     disaster,
                     author,
