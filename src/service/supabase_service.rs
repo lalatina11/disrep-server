@@ -4,7 +4,7 @@ use crate::{
     config::supabase_config::SupabaseConfig,
     error::{ServiceError, supabase_error::SupabaseStorageErrorResponse},
     models::{
-        auth_model::{SignInPayload, SignUpPayload},
+        auth_model::{RefreshTokenPayload, SignInPayload, SignUpPayload},
         form_data::FileFormData,
     },
     utils::{CommonUtility, responses::storage_response::SupabaseStorageResult},
@@ -42,6 +42,32 @@ impl SupabaseService {
         let fetch = Client::new();
         let url = format!(
             "{}/auth/v1/token?grant_type=password",
+            supabase_config.project_url
+        );
+        let res = fetch
+            .post(url)
+            .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|_| {
+                println!("Response error");
+                ServiceError::internal()
+            })?
+            .text()
+            .await
+            .map_err(|_| {
+                println!("Parsing text error");
+                ServiceError::internal()
+            })?;
+        Ok(res)
+    }
+    pub async fn refresh_token(payload: RefreshTokenPayload) -> Result<String, ServiceError> {
+        let supabase_config = SupabaseConfig::new();
+        let fetch = Client::new();
+        let url = format!(
+            "{}/auth/v1/token?grant_type=refresh_token",
             supabase_config.project_url
         );
         let res = fetch

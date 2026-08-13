@@ -8,7 +8,9 @@ use crate::{
     config::server_config::AppEnv,
     error::{ServiceError, supabase_error::SupabaseAuthErrorResponse},
     models::{
-        auth_model::{AuthPayload, SignInPayload, SignUpAdditionalData, SignUpPayload},
+        auth_model::{
+            AuthPayload, RefreshTokenPayload, SignInPayload, SignUpAdditionalData, SignUpPayload,
+        },
         user_model::UserModel,
     },
     service::{supabase_service::SupabaseService, user_service::UserService},
@@ -133,5 +135,36 @@ impl AuthService {
             "access_token={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
             token, max_age, secure_flag
         )
+    }
+
+    pub async fn refresh_token(payload: RefreshTokenPayload) -> Result<AuthPayload, ServiceError> {
+        let res = SupabaseService::refresh_token(payload).await;
+
+        if let Ok(res_text) = res {
+            if let Ok(is_sign_in_success) =
+                serde_json::from_str::<SignUpAndInSuccessResponse>(&res_text)
+            {
+                let existing_user = is_sign_in_success.check_existing_user().await;
+                if let Ok(user_model) = existing_user {
+                    let access_token = is_sign_in_success.access_token;
+                    let refresh_token = is_sign_in_success.refresh_token;
+                    return Ok(user_model.to_payload(access_token, refresh_token));
+                } else {
+                    let create_user = is_sign_in_success.create_user().await;
+                    if let Ok(user_model) = create_user {
+                        let access_token = is_sign_in_success.access_token;
+                        let refresh_token = is_sign_in_success.refresh_token;
+                        return Ok(user_model.to_payload(access_token, refresh_token));
+                    }
+                }
+                return Err(ServiceError::internal());
+            }
+
+            if let Ok(err) = serde_json::from_str::<SupabaseAuthErrorResponse>(&res_text) {
+                return Err(err.to_service_error());
+            }
+        }
+
+        Err(ServiceError::internal())
     }
 }

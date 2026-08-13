@@ -13,6 +13,7 @@ impl AuthRoutes {
         Router::new()
             .route("/sign-up", post(AuthHandler::sign_up))
             .route("/sign-in", post(AuthHandler::sign_in))
+            .route("/refresh-token", post(AuthHandler::refresh_token))
             .merge(ProtectedAuthRoutes::setup())
     }
 }
