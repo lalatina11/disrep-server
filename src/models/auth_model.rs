@@ -71,6 +71,10 @@ pub struct AuthPayload {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Validate)]
 pub struct RefreshTokenPayload {
-    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
+    #[validate(length(
+        min = 10,
+        max = 15,
+        message = "Refresh Token must between 10-15 characters"
+    ))]
     pub refresh_token: String,
 }
