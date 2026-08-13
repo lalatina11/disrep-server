@@ -136,14 +136,14 @@ impl AuthService {
         Err(ServiceError::internal())
     }
 
-    pub fn generate_cookie(token: String) -> String {
-        let max_age = 6 * 24 * 60 * 60; // 6 days in seconds (259200)
+    pub fn generate_cookie(cookie_name: &str, token: String, day: Option<u8>) -> String {
+        let max_age = day.unwrap_or(1) * 24 * 60 * 60; // 6 days in seconds (259200)
         let is_production = AppEnv::new() == AppEnv::Production;
         let secure_flag = if is_production { "; Secure" } else { "" };
 
         format!(
-            "access_token={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
-            token, max_age, secure_flag
+            "{}={}; Path=/; HttpOnly; Max-Age={}; SameSite=Lax{}",
+            cookie_name, token, max_age, secure_flag,
         )
     }
 

@@ -25,10 +25,20 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = AuthService::generate_cookie(data.token.access_token.clone());
+            let access_token =
+                AuthService::generate_cookie("access_token", data.token.access_token.clone(), None);
+            let refresh_token = AuthService::generate_cookie(
+                "refresh_token",
+                data.token.refresh_token.clone(),
+                Some(7),
+            );
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
+            );
+            headers.insert(
+                HeaderType::SET_COOKIE,
+                HeaderValue::from_str(&refresh_token).unwrap(),
             );
             return (
                 StatusCode::CREATED,
@@ -52,10 +62,20 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = AuthService::generate_cookie(data.token.access_token.clone());
+            let access_token =
+                AuthService::generate_cookie("access_token", data.token.access_token.clone(), None);
+            let refresh_token = AuthService::generate_cookie(
+                "refresh_token",
+                data.token.refresh_token.clone(),
+                Some(7),
+            );
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
+            );
+            headers.insert(
+                HeaderType::SET_COOKIE,
+                HeaderValue::from_str(&refresh_token).unwrap(),
             );
             return (
                 StatusCode::OK,
@@ -85,10 +105,20 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
         headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
         if let Ok(data) = service {
-            let access_token = AuthService::generate_cookie(data.token.access_token.clone());
+            let access_token =
+                AuthService::generate_cookie("access_token", data.token.access_token.clone(), None);
+            let refresh_token = AuthService::generate_cookie(
+                "refresh_token",
+                data.token.refresh_token.clone(),
+                Some(7),
+            );
             headers.insert(
                 HeaderType::SET_COOKIE,
                 HeaderValue::from_str(&access_token).unwrap(),
+            );
+            headers.insert(
+                HeaderType::SET_COOKIE,
+                HeaderValue::from_str(&refresh_token).unwrap(),
             );
             return (
                 StatusCode::OK,
