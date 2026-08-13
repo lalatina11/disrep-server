@@ -134,4 +134,19 @@ impl AuthHandler {
         }
         ApiResponse::error(None, None)
     }
+
+    pub async fn sign_out() -> ApiResponseReturnTypeWithHeader<AuthPayload> {
+        let mut headers = HeaderMap::new();
+        headers.insert(HANDLED_HEADER, HeaderValue::from_static("true"));
+        headers.insert(HeaderType::SET_COOKIE, HeaderValue::from_static(""));
+        (
+            StatusCode::OK,
+            headers,
+            Json::<ApiResponse<AuthPayload>>(ApiResponse {
+                success: true,
+                message: "Login user success".to_string(),
+                data: None,
+            }),
+        )
+    }
 }
