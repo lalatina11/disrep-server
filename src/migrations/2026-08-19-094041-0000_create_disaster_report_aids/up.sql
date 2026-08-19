@@ -9,4 +9,4 @@ CREATE TABLE disaster_report_aids
     REFERENCES disaster_reports(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_disaster_reports_aid_disaster ON disaster_report_images(disaster_report_id);
+CREATE INDEX idx_disaster_reports_aid_disaster ON disaster_reports(id);

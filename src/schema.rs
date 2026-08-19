@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    disaster_report_aid_attachment (id) {
+    disaster_report_aid_attachments (id) {
         id -> Uuid,
         disaster_report_aid_id -> Uuid,
         image_url -> Text,
@@ -27,7 +27,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    disaster_report_images (id) {
+    disaster_report_attachments (id) {
         id -> Uuid,
         disaster_report_id -> Uuid,
         url -> Text,
@@ -66,17 +66,17 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(disaster_report_aid_attachment -> disaster_report_aids (disaster_report_aid_id));
+diesel::joinable!(disaster_report_aid_attachments -> disaster_report_aids (disaster_report_aid_id));
 diesel::joinable!(disaster_report_aid_items -> disaster_report_aids (disaster_report_aid_id));
 diesel::joinable!(disaster_report_aids -> disaster_reports (disaster_report_id));
-diesel::joinable!(disaster_report_images -> disaster_reports (disaster_report_id));
+diesel::joinable!(disaster_report_attachments -> disaster_reports (disaster_report_id));
 diesel::joinable!(disaster_reports -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    disaster_report_aid_attachment,
+    disaster_report_aid_attachments,
     disaster_report_aid_items,
     disaster_report_aids,
-    disaster_report_images,
+    disaster_report_attachments,
     disaster_reports,
     users,
 );

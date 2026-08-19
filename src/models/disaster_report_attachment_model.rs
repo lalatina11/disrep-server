@@ -4,7 +4,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(table_name = crate::schema::disaster_report_attachments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DisasterReportAttachmentModel {
     pub id: Uuid,
@@ -13,14 +13,14 @@ pub struct DisasterReportAttachmentModel {
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(table_name = crate::schema::disaster_report_attachments)]
 pub struct CreateDisasterReportImage {
     pub disaster_report_id: Uuid,
     pub url: String,
 }
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(table_name = crate::schema::disaster_report_attachments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DisasterReportsAttachmentModel {
     pub id: Uuid,
@@ -29,7 +29,7 @@ pub struct DisasterReportsAttachmentModel {
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize, Validate)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(table_name = crate::schema::disaster_report_attachments)]
 pub struct DisasterReportsAttachmentModelPayload {
     pub disaster_report_id: Uuid,
     pub url: String,
