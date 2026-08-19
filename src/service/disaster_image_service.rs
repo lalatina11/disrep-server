@@ -1,7 +1,7 @@
 use crate::{
     config::database_config::Database,
     error::ServiceError,
-    models::disaster_report_image_model::{
+    models::disaster_report_attachment_model::{
         DisasterReportImageModel, DisasterReportsImageModelPayload,
     },
 };

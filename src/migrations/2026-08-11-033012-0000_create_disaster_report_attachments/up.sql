@@ -1,5 +1,5 @@
 -- Your SQL goes here
-CREATE TABLE disaster_report_images
+CREATE TABLE disaster_report_attachments
 (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     disaster_report_id UUID NOT NULL,
