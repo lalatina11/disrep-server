@@ -11,7 +11,9 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
-        disaster_report_image_model::{DisasterAttachmentPayload, DisasterReportImageModel},
+        disaster_report_attachment_model::{
+            DisasterAttachmentPayload, DisasterReportAttachmentModel,
+        },
         user_model::UserModel,
     },
     service::{disaster_image_service::DisasterImageService, user_service::UserService},
@@ -20,7 +22,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
-    pub images: Vec<DisasterAttachmentPayload>,
+    pub images: Vec<DisasterReportAttachmentModel>,
     pub author: UserModel,
 }
 
@@ -42,11 +44,11 @@ impl DisasterService {
                 .iter()
                 .map(|(report, _)| report.id)
                 .collect();
-            let all_images: Result<Vec<DisasterReportImageModel>, DieselError> =
+            let all_images: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
                 disaster_report_images::table
                     .filter(disaster_report_images::disaster_report_id.eq_any(&report_ids))
-                    .select(DisasterReportImageModel::as_select())
-                    .load::<DisasterReportImageModel>(conn);
+                    .select(DisasterReportAttachmentModel::as_select())
+                    .load::<DisasterReportAttachmentModel>(conn);
             if let Ok(images) = all_images {
                 let result = reports_with_users
                     .into_iter()
@@ -132,10 +134,10 @@ impl DisasterService {
         }
 
         if let Ok((disaster, author)) = res {
-            let images_res: Result<Vec<DisasterReportImageModel>, DieselError> =
+            let images_res: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
                 disaster_report_images::table
                     .filter(disaster_report_images::columns::disaster_report_id.eq(disaster.id))
-                    .select(DisasterReportImageModel::as_select())
+                    .select(DisasterReportAttachmentModel::as_select())
                     .load(conn);
             if let Ok(images) = images_res {
                 let images = images
