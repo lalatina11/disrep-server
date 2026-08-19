@@ -5,7 +5,7 @@ CREATE TABLE disaster_report_aid_items
     disaster_report_aid_id UUID NOT NULL,
     item_name VARCHAR(128) NOT NULL,
     item_price VARCHAR(128) NOT NULL,
-
+    quantity INTEGER NOT NULL,
 
     CONSTRAINT fk_disaster_report_aid FOREIGN KEY (disaster_report_aid_id)
     REFERENCES disaster_report_aids(id) ON DELETE CASCADE ON UPDATE CASCADE

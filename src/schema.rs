@@ -16,6 +16,7 @@ diesel::table! {
         item_name -> Varchar,
         #[max_length = 128]
         item_price -> Varchar,
+        quantity -> Int4,
     }
 }
 
