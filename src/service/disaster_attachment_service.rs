@@ -11,7 +11,7 @@ pub struct DisasterAttachmentService;
 
 impl DisasterAttachmentService {
     pub async fn insert(
-        payload: DisasterReportsAttachmentModelPayload,
+        payload: Vec<DisasterReportsAttachmentModelPayload>,
     ) -> Result<DisasterReportAttachmentModel, ServiceError> {
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_report_attachments;

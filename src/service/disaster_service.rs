@@ -13,6 +13,7 @@ use crate::{
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
+            DisasterReportsAttachmentModelPayload,
         },
         user_model::UserModel,
     },
@@ -103,14 +104,14 @@ impl DisasterService {
         }
 
         if let Ok(disaster) = insert_disaster_res {
-            for attachment in payload.attachment {
-                attachment.validate()?;
-                let payload = attachment.into_insert(disaster.id);
-
-                let res = DisasterAttachmentService::insert(payload).await;
-                if let Err(_) = res {
-                    return Err(ServiceError::internal());
-                }
+            let disaster_attachment_payload: Vec<DisasterReportsAttachmentModelPayload> = payload
+                .attachment
+                .into_iter()
+                .map(|attachment| attachment.into_insert(disaster.id))
+                .collect();
+            let res = DisasterAttachmentService::insert(disaster_attachment_payload).await;
+            if let Err(_) = res {
+                return Err(ServiceError::internal());
             }
             return Ok(disaster);
         }
