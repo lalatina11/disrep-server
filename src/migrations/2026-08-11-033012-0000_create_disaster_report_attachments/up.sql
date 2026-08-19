@@ -9,5 +9,5 @@ CREATE TABLE disaster_report_attachments
     REFERENCES disaster_reports(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_disaster_reports_image ON disaster_report_images(id);
-CREATE INDEX idx_disaster_reports_image_disaster ON disaster_report_images(disaster_report_id);
+CREATE INDEX idx_disaster_reports_image ON disaster_report_attachments(id);
+CREATE INDEX idx_disaster_reports_image_disaster ON disaster_report_attachments(disaster_report_id);
