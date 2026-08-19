@@ -31,7 +31,7 @@ pub struct DisasterService;
 impl DisasterService {
     pub fn get_all() -> Result<Vec<DisasterWithAllRelations>, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::{disaster_report_images, disaster_reports, users};
+        use crate::schema::{disaster_report_attachments, disaster_reports, users};
         let report_with_users_res: Result<Vec<(DisasterReportsModel, UserModel)>, DieselError> =
             disaster_reports::table
                 .filter(disaster_reports::status.ne("pending"))
@@ -45,8 +45,8 @@ impl DisasterService {
                 .map(|(report, _)| report.id)
                 .collect();
             let all_images: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
-                disaster_report_images::table
-                    .filter(disaster_report_images::disaster_report_id.eq_any(&report_ids))
+                disaster_report_attachments::table
+                    .filter(disaster_report_attachments::disaster_report_id.eq_any(&report_ids))
                     .select(DisasterReportAttachmentModel::as_select())
                     .load::<DisasterReportAttachmentModel>(conn);
             if let Ok(images) = all_images {
@@ -120,7 +120,7 @@ impl DisasterService {
 
     pub async fn get_by_id(disaster_id: Uuid) -> Result<DisasterWithAllRelations, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::{disaster_report_images, disaster_reports, users};
+        use crate::schema::{disaster_report_attachments, disaster_reports, users};
         let res: Result<(DisasterReportsModel, UserModel), DieselError> = disaster_reports::table
             .find(disaster_id)
             .inner_join(users::table)
@@ -135,8 +135,10 @@ impl DisasterService {
 
         if let Ok((disaster, author)) = res {
             let images_res: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
-                disaster_report_images::table
-                    .filter(disaster_report_images::columns::disaster_report_id.eq(disaster.id))
+                disaster_report_attachments::table
+                    .filter(
+                        disaster_report_attachments::columns::disaster_report_id.eq(disaster.id),
+                    )
                     .select(DisasterReportAttachmentModel::as_select())
                     .load(conn);
             if let Ok(images) = images_res {

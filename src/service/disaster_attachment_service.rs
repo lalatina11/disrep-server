@@ -14,10 +14,10 @@ impl DisasterAttachmentService {
         payload: DisasterReportsAttachmentModelPayload,
     ) -> Result<DisasterReportAttachmentModel, ServiceError> {
         let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_report_images;
+        use crate::schema::disaster_report_attachments;
 
         let res: Result<DisasterReportAttachmentModel, DieselError> =
-            diesel::insert_into(disaster_report_images::table)
+            diesel::insert_into(disaster_report_attachments::table)
                 .values(payload)
                 .returning(DisasterReportAttachmentModel::as_returning())
                 .get_result(conn);
