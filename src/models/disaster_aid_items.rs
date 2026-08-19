@@ -1,6 +1,7 @@
 use diesel::prelude::{Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::{Validate, ValidationError};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = crate::schema::disaster_report_aid_items)]
@@ -10,4 +11,28 @@ pub struct DisasterAidItems {
     item_name: String,
     item_price: f64,
     quantity: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct DisasterAidItemPayload {
+    #[validate(length(min = 3, max = 255, message = "Required 3-255 characters"))]
+    pub item_name: String,
+    #[validate(custom(function = "validate_price"))]
+    pub item_price: f64,
+    #[validate(range(
+        min = 1,
+        max = 1_000_000,
+        message = "Quantity must between 1-1.000.000"
+    ))]
+    pub quantity: i64,
+}
+
+fn validate_price(price: f64) -> Result<(), ValidationError> {
+    if price < 0.0 || price.is_nan() || price.is_infinite() {
+        return Err(ValidationError::new("Invalid Price"));
+    }
+    if price < 1000.0 {
+        return Err(ValidationError::new("Mininum Rp1.000"));
+    }
+    Ok(())
 }

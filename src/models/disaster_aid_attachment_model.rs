@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
@@ -10,4 +10,10 @@ pub struct DisasterAidAttachmentModel {
     id: Uuid,
     disaster_report_aid_id: Uuid,
     image_url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct DisasterAidAttachmentPayload {
+    #[validate(length(min = 1, message = "Invalid attachment URL"))]
+    pub url: String,
 }
