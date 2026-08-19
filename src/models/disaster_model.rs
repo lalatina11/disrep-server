@@ -48,7 +48,11 @@ pub struct DisasterReportsModel {
 #[diesel(table_name = crate::schema::disaster_reports)]
 pub struct CreateDisasterReport {
     pub user_id: Uuid,
-    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Title must be between 3 and 255 characters"
+    ))]
     pub title: String,
     #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
@@ -66,7 +70,11 @@ pub struct CreateDisasterReport {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateDisasterReportWithImage {
-    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Title must be between 3 and 255 characters"
+    ))]
     pub title: String,
     #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
@@ -86,7 +94,11 @@ pub struct CreateDisasterReportWithImage {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateDisasterReportPayload {
-    #[validate(length(min = 3, max = 255, message = "Title must be between 3 and 255 characters"))]
+    #[validate(length(
+        min = 3,
+        max = 255,
+        message = "Title must be between 3 and 255 characters"
+    ))]
     pub title: String,
     #[validate(length(min = 3, message = "Description must be at least 3 characters"))]
     pub description: Option<String>,
@@ -120,20 +132,4 @@ impl CreateDisasterReportWithImage {
                 .unwrap_or(DisasterStatus::Pending.to_string()),
         }
     }
-}
-
-#[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct DisasterReportImageModel {
-    pub id: Uuid,
-    pub disaster_report_id: Uuid,
-    pub url: String,
-}
-
-#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_images)]
-pub struct CreateDisasterReportImage {
-    pub disaster_report_id: Uuid,
-    pub url: String,
 }

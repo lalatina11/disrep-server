@@ -1,9 +1,8 @@
 use crate::{
     config::database_config::Database,
     error::ServiceError,
-    models::{
-        disaster_model::DisasterReportImageModel,
-        disaster_report_image_model::DisasterReportsImageModelPayload,
+    models::disaster_report_image_model::{
+        DisasterReportImageModel, DisasterReportsImageModelPayload,
     },
 };
 use diesel::{RunQueryDsl, SelectableHelper, result::Error as DieselError};

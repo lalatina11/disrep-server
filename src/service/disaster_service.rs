@@ -10,11 +10,8 @@ use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::{
-        disaster_model::{
-            CreateDisasterReportWithImage, DisasterReportImageModel, DisasterReportsModel,
-            DisasterStatus,
-        },
-        disaster_report_image_model::DisasterImagePayload,
+        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
+        disaster_report_image_model::{DisasterImagePayload, DisasterReportImageModel},
         user_model::UserModel,
     },
     service::{disaster_image_service::DisasterImageService, user_service::UserService},

@@ -6,6 +6,22 @@ use validator::Validate;
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_report_images)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct DisasterReportImageModel {
+    pub id: Uuid,
+    pub disaster_report_id: Uuid,
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_report_images)]
+pub struct CreateDisasterReportImage {
+    pub disaster_report_id: Uuid,
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = crate::schema::disaster_report_images)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DisasterReportsImageModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
