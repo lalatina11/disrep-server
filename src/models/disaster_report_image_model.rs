@@ -30,20 +30,20 @@ pub struct DisasterReportsImageModel {
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = crate::schema::disaster_report_images)]
-pub struct DisasterReportsImageModelPayload {
+pub struct DisasterReportsAttachmentModelPayload {
     pub disaster_report_id: Uuid,
     pub url: String,
 }
 
 #[derive(Serialize, Deserialize, Validate, Clone, Debug)]
-pub struct DisasterImagePayload {
+pub struct DisasterAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub url: String,
 }
 
-impl DisasterImagePayload {
-    pub fn into_insert(self, disaster_report_id: Uuid) -> DisasterReportsImageModelPayload {
-        DisasterReportsImageModelPayload {
+impl DisasterAttachmentPayload {
+    pub fn into_insert(self, disaster_report_id: Uuid) -> DisasterReportsAttachmentModelPayload {
+        DisasterReportsAttachmentModelPayload {
             disaster_report_id,
             url: self.url,
         }
