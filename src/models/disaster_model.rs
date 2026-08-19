@@ -1,3 +1,4 @@
+use crate::models::disaster_report_image_model::DisasterAttachmentPayload;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -23,8 +24,6 @@ impl DisasterStatus {
         }
     }
 }
-
-use crate::models::disaster_report_image_model::DisasterImagePayload;
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_reports)]
@@ -88,7 +87,7 @@ pub struct CreateDisasterReportWithImage {
     pub lng: f64,
     pub is_anon: Option<bool>,
     #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
-    pub attachment: Vec<DisasterImagePayload>,
+    pub attachment: Vec<DisasterAttachmentPayload>,
     pub status: Option<String>,
 }
 
@@ -112,7 +111,7 @@ pub struct CreateDisasterReportPayload {
     pub lng: f64,
     pub is_anon: Option<bool>,
     #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
-    pub images: Vec<DisasterImagePayload>,
+    pub images: Vec<DisasterAttachmentPayload>,
 }
 
 impl CreateDisasterReportWithImage {

@@ -2,7 +2,7 @@ use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::disaster_report_attachment_model::{
-        DisasterReportAttachmentModel, DisasterReportsImageModelPayload,
+        DisasterReportAttachmentModel, DisasterReportsAttachmentModelPayload,
     },
 };
 use diesel::{RunQueryDsl, SelectableHelper, result::Error as DieselError};
@@ -11,7 +11,7 @@ pub struct DisasterImageService;
 
 impl DisasterImageService {
     pub async fn insert(
-        payload: DisasterReportsImageModelPayload,
+        payload: DisasterReportsAttachmentModelPayload,
     ) -> Result<DisasterReportAttachmentModel, ServiceError> {
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_report_images;
