@@ -14,9 +14,8 @@ diesel::table! {
         disaster_report_aid_id -> Uuid,
         #[max_length = 128]
         item_name -> Varchar,
-        #[max_length = 128]
-        item_price -> Varchar,
-        quantity -> Int4,
+        item_price -> Float8,
+        quantity -> Int8,
     }
 }
 

@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::models::disaster_aid_attachment_model::DisasterAidAttachmentPayload;
+use crate::models::{
+    disaster_aid_attachment_model::DisasterAidAttachmentPayload,
+    disaster_aid_items::DisasterAidItemPayload,
+};
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_report_aids)]
@@ -13,9 +16,24 @@ pub struct DisasterAidModel {
     pub disaster_report_id: Uuid,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, Insertable)]
+#[diesel(table_name = crate::schema::disaster_report_aids)]
+pub struct DisasterAidPayload {
+    pub disaster_report_id: Uuid,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateDisasterAid {
     pub disaster_id: Uuid,
     #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
     pub attachments: Vec<DisasterAidAttachmentPayload>,
+    pub items: Vec<DisasterAidItemPayload>,
+}
+
+impl CreateDisasterAid {
+    pub fn to_records(&self) -> DisasterAidPayload {
+        DisasterAidPayload {
+            disaster_report_id: self.disaster_id,
+        }
+    }
 }
