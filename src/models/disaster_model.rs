@@ -1,9 +1,10 @@
-use crate::models::disaster_report_image_model::DisasterAttachmentPayload;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
+
+use crate::models::disaster_report_attachment_model::DisasterAttachmentPayload;
 
 pub enum DisasterStatus {
     Pending,
