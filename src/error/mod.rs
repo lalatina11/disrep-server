@@ -42,6 +42,14 @@ impl ServiceError {
         }
     }
 
+    pub fn forbidden(msg: Option<String>) -> Self {
+        let status = StatusCode::FORBIDDEN;
+        Self {
+            message: msg.unwrap_or_else(|| status.to_string()),
+            status: status.as_u16(),
+        }
+    }
+
     pub fn get_status(&self) -> StatusCode {
         StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
     }
