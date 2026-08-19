@@ -16,7 +16,7 @@ use crate::{
         },
         user_model::UserModel,
     },
-    service::{disaster_image_service::DisasterImageService, user_service::UserService},
+    service::{disaster_attachment_service::DisasterAttachmentService, user_service::UserService},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,7 +107,7 @@ impl DisasterService {
                 attachment.validate()?;
                 let payload = attachment.into_insert(disaster.id);
 
-                let res = DisasterImageService::insert(payload).await;
+                let res = DisasterAttachmentService::insert(payload).await;
                 if let Err(_) = res {
                     return Err(ServiceError::internal());
                 }

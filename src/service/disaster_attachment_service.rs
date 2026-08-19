@@ -7,9 +7,9 @@ use crate::{
 };
 use diesel::{RunQueryDsl, SelectableHelper, result::Error as DieselError};
 
-pub struct DisasterImageService;
+pub struct DisasterAttachmentService;
 
-impl DisasterImageService {
+impl DisasterAttachmentService {
     pub async fn insert(
         payload: DisasterReportsAttachmentModelPayload,
     ) -> Result<DisasterReportAttachmentModel, ServiceError> {
