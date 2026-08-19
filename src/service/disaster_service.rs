@@ -22,7 +22,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
-    pub images: Vec<DisasterReportAttachmentModel>,
+    pub images: Vec<DisasterAttachmentPayload>,
     pub author: UserModel,
 }
 
