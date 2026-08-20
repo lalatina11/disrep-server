@@ -4,7 +4,7 @@ diesel::table! {
     disaster_report_aid_attachments (id) {
         id -> Uuid,
         disaster_report_aid_id -> Uuid,
-        image_url -> Text,
+        media_url -> Text,
     }
 }
 
