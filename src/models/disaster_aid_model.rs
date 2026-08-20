@@ -5,7 +5,7 @@ use validator::Validate;
 
 use crate::models::{
     disaster_aid_attachment_model::DisasterAidAttachmentPayload,
-    disaster_aid_items::DisasterAidItemPayload,
+    disaster_aid_items_model::DisasterAidItemPayload,
 };
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]

@@ -1,6 +1,6 @@
 pub mod auth_model;
 pub mod disaster_aid_attachment_model;
-pub mod disaster_aid_items;
+pub mod disaster_aid_items_model;
 pub mod disaster_aid_model;
 pub mod disaster_model;
 pub mod disaster_report_attachment_model;

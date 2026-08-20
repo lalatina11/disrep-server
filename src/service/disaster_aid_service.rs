@@ -3,7 +3,7 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_aid_attachment_model::DisasterAidAttachmentPayloadWidhDisasterAidId,
-        disaster_aid_items::DisasterAidItemPayloadWithDisasterAidId,
+        disaster_aid_items_model::DisasterAidItemPayloadWithDisasterAidId,
         disaster_aid_model::{CreateDisasterAid, DisasterAidModel},
     },
 };
