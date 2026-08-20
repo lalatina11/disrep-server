@@ -18,8 +18,8 @@ impl CommonUtility {
         )
     }
 
-    pub fn generate_media_url(image_key: String) -> String {
+    pub fn generate_media_url(media_url: String) -> String {
         let supabase = SupabaseConfig::new();
-        format!("{}/object/public/{}", supabase.storage_base_url, image_key,)
+        format!("{}/object/public/{}", supabase.storage_base_url, media_url)
     }
 }
