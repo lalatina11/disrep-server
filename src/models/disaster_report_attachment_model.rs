@@ -9,14 +9,14 @@ use validator::Validate;
 pub struct DisasterReportAttachmentModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
-    pub url: String,
+    pub media_url: String,
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_report_attachments)]
 pub struct CreateDisasterReportImage {
     pub disaster_report_id: Uuid,
-    pub url: String,
+    pub media_url: String,
 }
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
@@ -25,27 +25,27 @@ pub struct CreateDisasterReportImage {
 pub struct DisasterReportsAttachmentModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
-    pub url: String,
+    pub media_url: String,
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = crate::schema::disaster_report_attachments)]
 pub struct DisasterReportsAttachmentModelPayload {
     pub disaster_report_id: Uuid,
-    pub url: String,
+    pub media_url: String,
 }
 
 #[derive(Serialize, Deserialize, Validate, Clone, Debug)]
 pub struct DisasterAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
-    pub url: String,
+    pub media_url: String,
 }
 
 impl DisasterAttachmentPayload {
     pub fn into_insert(self, disaster_report_id: Uuid) -> DisasterReportsAttachmentModelPayload {
         DisasterReportsAttachmentModelPayload {
             disaster_report_id,
-            url: self.url,
+            media_url: self.media_url,
         }
     }
 }
