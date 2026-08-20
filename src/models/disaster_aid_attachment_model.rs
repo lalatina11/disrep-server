@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
+use crate::utils::CommonUtility;
+
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -21,7 +23,15 @@ pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct DisasterAidAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
-    pub url: String,
+    pub media_url: String,
+}
+
+impl DisasterAidAttachmentPayload {
+    pub fn fixed_media_url(self) -> Self {
+        Self {
+            media_url: CommonUtility::generate_media_url(self.media_url),
+        }
+    }
 }
 
 impl DisasterAidAttachmentPayload {
@@ -31,7 +41,7 @@ impl DisasterAidAttachmentPayload {
     ) -> DisasterAidAttachmentPayloadWidhDisasterAidId {
         DisasterAidAttachmentPayloadWidhDisasterAidId {
             disaster_report_aid_id,
-            media_url: self.url.clone(),
+            media_url: self.media_url.clone(),
         }
     }
 }
