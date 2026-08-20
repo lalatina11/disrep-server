@@ -122,8 +122,8 @@ impl SupabaseService {
                 let image_name = CommonUtility::generate_unique_name();
                 let client = Client::new();
                 let url = format!(
-                    "{}/object/disaster-report-img-vid/{}",
-                    supabase.storage_base_url, image_name
+                    "{}/object/{}/{}",
+                    supabase.storage_base_url, supabase.storage_bucket_name, image_name
                 );
 
                 let content_type = match file.content_type.as_deref() {
