@@ -89,6 +89,27 @@ impl SupabaseService {
             })?;
         Ok(res)
     }
+    pub async fn sign_out(token: String) -> Result<(), ServiceError> {
+        let supabase_config = SupabaseConfig::new();
+        let fetch = Client::new();
+        let url = format!("{}/auth/v1/logout", supabase_config.project_url);
+        let res = fetch
+            .post(url)
+            .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .header(HeaderType::AUTHORIZATION, token)
+            .send()
+            .await
+            .map_err(|_| {
+                println!("Response error");
+                ServiceError::internal()
+            })?;
+
+        if res.status().is_success() {
+            return Ok(());
+        }
+        Err(ServiceError::internal())
+    }
 
     pub async fn get_user(token: String) -> Result<String, ServiceError> {
         let supabase_config = SupabaseConfig::new();
