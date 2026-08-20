@@ -135,15 +135,13 @@ impl AuthHandler {
         ApiResponse::error(None, None)
     }
 
-    pub async fn sign_out(header_map: HeaderMap) -> ApiResponseReturnTypeWithHeader<AuthPayload> {
-        let get_access_token = header_map.get(HeaderType::AUTHORIZATION);
-        if let Some(header_value) = get_access_token {
-            let parse_access_token = header_value.to_str();
-            if let Ok(access_token) = parse_access_token {
-                let service = AuthService::sign_out(access_token.to_string()).await;
-                if let Err(err) = service {
-                    return err.to_handler_error();
-                }
+    pub async fn sign_out(header_map: HeaderMap) -> impl IntoResponse {
+        if let Some(access_token) = header_map
+            .get(HeaderType::AUTHORIZATION)
+            .and_then(|h| h.to_str().ok())
+        {
+            if let Err(err) = AuthService::sign_out(access_token.to_string()).await {
+                return err.to_handler_error();
             }
         }
 
