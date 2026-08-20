@@ -58,7 +58,7 @@ impl DisasterService {
                             .iter()
                             .filter(|img| &img.disaster_report_id == &disaster.id)
                             .map(|img| DisasterAttachmentPayload {
-                                url: img.url.clone(),
+                                media_url: img.media_url.clone(),
                             })
                             .collect();
 
@@ -145,7 +145,9 @@ impl DisasterService {
             if let Ok(images) = images_res {
                 let images = images
                     .into_iter()
-                    .map(|img| DisasterAttachmentPayload { url: img.url })
+                    .map(|img| DisasterAttachmentPayload {
+                        media_url: img.media_url,
+                    })
                     .collect();
                 return Ok(DisasterWithAllRelations {
                     disaster,
