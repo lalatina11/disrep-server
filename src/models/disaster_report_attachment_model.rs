@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::config::supabase_config::SupabaseConfig;
+use crate::utils::CommonUtility;
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_report_attachments)]
@@ -45,11 +45,7 @@ pub struct DisasterAttachmentPayload {
 
 impl DisasterAttachmentPayload {
     pub fn fixed_media_url(self) -> Self {
-        let supabase_config = SupabaseConfig::new();
-        let media_url = format!(
-            "{}/object/public/{}",
-            supabase_config.storage_base_url, self.media_url
-        );
+        let media_url = CommonUtility::generate_media_url(self.media_url);
         Self { media_url }
     }
 }
