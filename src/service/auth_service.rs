@@ -189,4 +189,8 @@ impl AuthService {
 
         Err(ServiceError::internal())
     }
+
+    pub async fn sign_out(access_token: String) -> Result<(), ServiceError> {
+        SupabaseService::sign_out(access_token).await
+    }
 }
