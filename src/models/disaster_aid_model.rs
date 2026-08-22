@@ -18,6 +18,8 @@ pub struct DisasterAidModel {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterAidWithAllRelations {
+    pub id: Uuid,
+    pub disaster_report_id: Uuid,
     pub items: Vec<DisasterAidItemModel>,
     pub attachments: Vec<DisasterAidAttachmentModel>,
 }
