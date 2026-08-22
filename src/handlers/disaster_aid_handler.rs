@@ -1,7 +1,5 @@
-use axum::Extension;
-
 use crate::{
-    models::{auth_model::UserPayload, disaster_aid_model::CreateDisasterAid},
+    models::disaster_aid_model::CreateDisasterAid,
     service::disaster_report_aid_service::DiassterReportAidService,
     utils::{
         request::json_parser::JsonParser,
@@ -13,7 +11,6 @@ pub struct DisasterAidHandler;
 
 impl DisasterAidHandler {
     pub async fn create(
-        Extension(_): Extension<UserPayload>,
         JsonParser(payload): JsonParser<CreateDisasterAid>,
     ) -> ApiResponseReturnTypeWithHeader<bool> {
         let service = DiassterReportAidService::create(payload).await;
