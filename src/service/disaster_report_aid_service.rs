@@ -143,7 +143,7 @@ impl DiassterReportAidService {
                 )));
             }
             let disaster_res =
-                DisasterService::update_status(disaster_id, DisasterStatus::New).await;
+                DisasterService::update_status(disaster_id, DisasterStatus::AidDispatched).await;
             if let Ok(disaster) = disaster_res {
                 return Ok(disaster);
             }
