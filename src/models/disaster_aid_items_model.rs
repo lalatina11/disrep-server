@@ -62,9 +62,7 @@ fn validate_price(price: f64) -> Result<(), ValidationError> {
         return Err(ValidationError::new("Invalid Price"));
     }
     if price < 1000.0 {
-        let mut validation_error = ValidationError::new("Minimum Rp1.000");
-        validation_error.message = Some("Minimum Rp1.000".into());
-        return Err(validation_error);
+        return Err(ValidationError::new("Minimum Rp1.000"));
     }
     Ok(())
 }
