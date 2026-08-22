@@ -160,6 +160,7 @@ impl DisasterService {
                     .select(DisasterReportAttachmentModel::as_select())
                     .load(conn);
             if let Ok(images) = images_res {
+                let diaster_aid_res = DiassterReportAidService::get_all(vec![disaster_id]).await;
                 let images = images
                     .into_iter()
                     .map(|img| {
@@ -169,12 +170,14 @@ impl DisasterService {
                         disaster_image.fixed_media_url()
                     })
                     .collect();
-                return Ok(DisasterWithAllRelations {
-                    disaster,
-                    author,
-                    images,
-                    aids: vec![],
-                });
+                if let Ok(aids) = diaster_aid_res {
+                    return Ok(DisasterWithAllRelations {
+                        disaster,
+                        author,
+                        images,
+                        aids: aids,
+                    });
+                }
             }
         }
 
