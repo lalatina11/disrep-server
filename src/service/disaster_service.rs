@@ -100,7 +100,7 @@ impl DisasterService {
 
         let user = UserService::get_user_by_id(user_id).await?;
 
-        if user.is_authorize_as_admin() {
+        if user.is_authorize_as_admins() {
             payload.status = Some(DisasterStatus::New.to_string())
         }
 
