@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use diesel::prelude::{Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -59,10 +61,14 @@ pub struct DisasterAidItemPayloadWithDisasterAidId {
 
 fn validate_price(price: f64) -> Result<(), ValidationError> {
     if price < 0.0 || price.is_nan() || price.is_infinite() {
-        return Err(ValidationError::new("Invalid Price"));
+        let mut err = ValidationError::new("invalid_price");
+        err.message = Some(Cow::from("Invalid Price"));
+        return Err(err);
     }
     if price < 1000.0 {
-        return Err(ValidationError::new("Minimum Rp1.000"));
+        let mut err = ValidationError::new("invalid_price");
+        err.message = Some(Cow::from("Minimum Rp.1000"));
+        return Err(err);
     }
     Ok(())
 }

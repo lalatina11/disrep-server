@@ -64,21 +64,38 @@ impl From<axum::extract::multipart::MultipartError> for ServiceError {
     }
 }
 
+fn extract_first_error(errors: &validator::ValidationErrors) -> Option<String> {
+    for (field, kind) in errors.errors() {
+        match kind {
+            validator::ValidationErrorsKind::Field(field_errors) => {
+                if let Some(first_err) = field_errors.first() {
+                    if let Some(ref msg) = first_err.message {
+                        return Some(msg.to_string());
+                    } else {
+                        return Some(format!("Invalid {}", field));
+                    }
+                }
+            }
+            validator::ValidationErrorsKind::Struct(nested_errors) => {
+                if let Some(msg) = extract_first_error(nested_errors) {
+                    return Some(msg);
+                }
+            }
+            validator::ValidationErrorsKind::List(list_errors) => {
+                for nested_errors in list_errors.values() {
+                    if let Some(msg) = extract_first_error(nested_errors) {
+                        return Some(msg);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
 impl From<validator::ValidationErrors> for ServiceError {
     fn from(err: validator::ValidationErrors) -> Self {
-        let message = if let Some((field, errors)) = err.field_errors().into_iter().next() {
-            if let Some(first_err) = errors.first() {
-                if let Some(ref msg) = first_err.message {
-                    msg.to_string()
-                } else {
-                    format!("Invalid {}", field)
-                }
-            } else {
-                "Invalid input".to_string()
-            }
-        } else {
-            "Invalid input".to_string()
-        };
+        let message = extract_first_error(&err).unwrap_or_else(|| "Invalid input".to_string());
 
         Self::unprocessable(Some(message))
     }
