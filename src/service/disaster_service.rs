@@ -10,7 +10,9 @@ use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::{
-        disaster_aid_model::DisasterAidWithAllRelations,
+        disaster_aid_attachment_model::DisasterAidAttachmentModel,
+        disaster_aid_items_model::DisasterAidItemModel,
+        disaster_aid_model::{DisasterAidModel, DisasterAidWithAllRelations},
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
@@ -26,7 +28,7 @@ pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
     pub images: Vec<DisasterAttachmentPayload>,
     pub author: UserModel,
-    pub aid: Vec<DisasterAidWithAllRelations>,
+    pub aids: Vec<DisasterAidWithAllRelations>,
 }
 
 pub struct DisasterService;
@@ -53,29 +55,89 @@ impl DisasterService {
                     .select(DisasterReportAttachmentModel::as_select())
                     .load::<DisasterReportAttachmentModel>(conn);
             if let Ok(images) = all_images {
-                let result = reports_with_users
-                    .into_iter()
-                    .map(|(disaster, author)| {
-                        let images = images
-                            .iter()
-                            .filter(|img| &img.disaster_report_id == &disaster.id)
-                            .map(|img| {
-                                let disaster_image = DisasterAttachmentPayload {
-                                    media_url: img.media_url.clone(),
-                                };
-                                disaster_image.fixed_media_url()
-                            })
-                            .collect();
+                use crate::schema::{
+                    disaster_report_aid_attachments, disaster_report_aid_items,
+                    disaster_report_aids,
+                };
 
-                        DisasterWithAllRelations {
-                            disaster,
-                            author,
-                            images,
-                            aid: vec![],
+                let disaster_aid_res: Result<Vec<DisasterAidModel>, DieselError> =
+                    disaster_report_aids::table
+                        .filter(disaster_report_aids::disaster_report_id.eq_any(&report_ids))
+                        .load(conn);
+                if let Ok(disaster_aid_data) = disaster_aid_res {
+                    let disaster_aid_ids: Vec<Uuid> = disaster_aid_data
+                        .iter()
+                        .map(|disaster_aid| disaster_aid.id)
+                        .collect();
+                    let disaster_aid_attachment_res: Result<
+                        Vec<DisasterAidAttachmentModel>,
+                        DieselError,
+                    > = disaster_report_aid_attachments::table
+                        .filter(
+                            disaster_report_aid_attachments::disaster_report_aid_id
+                                .eq_any(&disaster_aid_ids),
+                        )
+                        .load(conn);
+                    if let Ok(disaster_aid_attachment_data) = disaster_aid_attachment_res {
+                        let disaster_aid_items_res: Result<Vec<DisasterAidItemModel>, DieselError> =
+                            disaster_report_aid_items::table
+                                .filter(
+                                    disaster_report_aid_items::disaster_report_aid_id
+                                        .eq_any(&disaster_aid_ids),
+                                )
+                                .load(conn);
+                        if let Ok(disaster_aid_items_data) = disaster_aid_items_res {
+                            let result = reports_with_users
+                                .into_iter()
+                                .map(|(disaster, author)| {
+                                    let images = images
+                                        .iter()
+                                        .filter(|img| &img.disaster_report_id == &disaster.id)
+                                        .map(|img| {
+                                            let disaster_image = DisasterAttachmentPayload {
+                                                media_url: img.media_url.clone(),
+                                            };
+                                            disaster_image.fixed_media_url()
+                                        })
+                                        .collect();
+
+                                    let aids = disaster_aid_data
+                                        .iter()
+                                        .filter(|aid| &aid.disaster_report_id == &disaster.id)
+                                        .map(|aid| {
+                                            let attachments: Vec<DisasterAidAttachmentModel> =
+                                                disaster_aid_attachment_data
+                                                    .iter()
+                                                    .filter(|attachment| {
+                                                        &attachment.disaster_report_aid_id
+                                                            == &aid.id
+                                                    })
+                                                    .cloned()
+                                                    .collect();
+                                            let items: Vec<DisasterAidItemModel> =
+                                                disaster_aid_items_data
+                                                    .iter()
+                                                    .filter(|item| {
+                                                        &item.disaster_report_aid_id == &aid.id
+                                                    })
+                                                    .cloned()
+                                                    .collect();
+                                            DisasterAidWithAllRelations { attachments, items }
+                                        })
+                                        .collect();
+
+                                    DisasterWithAllRelations {
+                                        disaster,
+                                        author,
+                                        images,
+                                        aids,
+                                    }
+                                })
+                                .collect();
+                            return Ok(result);
                         }
-                    })
-                    .collect();
-                return Ok(result);
+                    }
+                }
             }
         }
         Err(ServiceError::internal())
@@ -162,7 +224,7 @@ impl DisasterService {
                     disaster,
                     author,
                     images,
-                    aid: vec![],
+                    aids: vec![],
                 });
             }
         }

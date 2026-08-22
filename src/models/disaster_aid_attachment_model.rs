@@ -9,15 +9,15 @@ use crate::utils::CommonUtility;
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DisasterAidAttachmentModel {
-    id: Uuid,
-    disaster_report_aid_id: Uuid,
-    media_url: String,
+    pub id: Uuid,
+    pub disaster_report_aid_id: Uuid,
+    pub media_url: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Insertable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
 pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
-    disaster_report_aid_id: Uuid,
-    media_url: String,
+    pub disaster_report_aid_id: Uuid,
+    pub media_url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]

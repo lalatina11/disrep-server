@@ -6,11 +6,11 @@ use validator::{Validate, ValidationError};
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = crate::schema::disaster_report_aid_items)]
 pub struct DisasterAidItemModel {
-    id: Uuid,
-    disaster_report_aid_id: Uuid,
-    item_name: String,
-    item_price: f64,
-    quantity: i64,
+    pub id: Uuid,
+    pub disaster_report_aid_id: Uuid,
+    pub item_name: String,
+    pub item_price: f64,
+    pub quantity: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
