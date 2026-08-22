@@ -35,6 +35,10 @@ pub struct CreateDisasterAid {
     pub disaster_id: Uuid,
     #[validate(length(min = 1, message = "Please insert an image or video"), nested)]
     pub attachments: Vec<DisasterAidAttachmentPayload>,
+    #[validate(
+        length(min = 1, message = "Please insert a disaster aid items"),
+        nested
+    )]
     pub items: Vec<DisasterAidItemPayload>,
 }
 
