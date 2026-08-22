@@ -200,4 +200,19 @@ impl DisasterService {
             Ok(data) => Ok(data),
         }
     }
+
+    pub async fn check_existing(disaster_id: Uuid) -> bool {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::disaster_reports;
+        let res: Result<DisasterReportsModel, DieselError> = disaster_reports::table
+            .find(disaster_id)
+            .select(DisasterReportsModel::as_select())
+            .first(conn);
+
+        if let Err(_) = res {
+            return false;
+        }
+
+        true
+    }
 }
