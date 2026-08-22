@@ -11,7 +11,7 @@ impl AdminMiddleware {
         req: Request,
         next: Next,
     ) -> impl IntoResponse {
-        if user.is_authorize_as_admin() {
+        if !user.is_authorize_as_admins() {
             let status = StatusCode::FORBIDDEN;
             return ApiResponse::<bool>::error(Some(status.to_string()), Some(status))
                 .into_response();

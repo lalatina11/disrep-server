@@ -24,7 +24,7 @@ pub struct UserModel {
 }
 
 impl UserModel {
-    pub fn is_authorize_as_admin(&self) -> bool {
+    pub fn is_authorize_as_admins(&self) -> bool {
         ADMIN_ROLES.contains(&self.role.as_str())
     }
 }
