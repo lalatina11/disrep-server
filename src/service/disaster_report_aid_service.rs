@@ -15,6 +15,7 @@ use crate::{
         },
         disaster_aid_items_model::{DisasterAidItemModel, DisasterAidItemPayloadWithDisasterAidId},
         disaster_aid_model::{CreateDisasterAid, DisasterAidModel, DisasterAidWithAllRelations},
+        disaster_model::DisasterStatus,
     },
     service::disaster_service::{DisasterService, DisasterWithAllRelations},
 };
@@ -141,7 +142,8 @@ impl DiassterReportAidService {
                     "Failed to insert disaster aid attachments".to_string(),
                 )));
             }
-            let disaster_res = DisasterService::get_by_id(disaster_id).await;
+            let disaster_res =
+                DisasterService::update_status(disaster_id, DisasterStatus::New).await;
             if let Ok(disaster) = disaster_res {
                 return Ok(disaster);
             }
