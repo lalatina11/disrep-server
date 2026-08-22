@@ -16,6 +16,7 @@ use crate::{
         disaster_aid_items_model::{DisasterAidItemModel, DisasterAidItemPayloadWithDisasterAidId},
         disaster_aid_model::{CreateDisasterAid, DisasterAidModel, DisasterAidWithAllRelations},
     },
+    service::disaster_service::{DisasterService, DisasterWithAllRelations},
 };
 
 pub struct DiassterReportAidService;
@@ -84,8 +85,21 @@ impl DiassterReportAidService {
         Err(ServiceError::internal())
     }
 
-    pub async fn create(payload: CreateDisasterAid) -> Result<(), ServiceError> {
+    pub async fn create(
+        payload: CreateDisasterAid,
+    ) -> Result<DisasterWithAllRelations, ServiceError> {
         payload.validate()?;
+
+        let disaster_id = payload.disaster_id;
+
+        let is_exist = DisasterService::check_existing(disaster_id).await;
+
+        if !is_exist {
+            return Err(ServiceError::not_found(Some(
+                "Disaster Report Not Found".to_string(),
+            )));
+        }
+
         let conn = &mut Database::establish_connection();
         use crate::schema::{
             disaster_report_aid_attachments, disaster_report_aid_items, disaster_report_aids,
@@ -127,7 +141,10 @@ impl DiassterReportAidService {
                     "Failed to insert disaster aid attachments".to_string(),
                 )));
             }
-            return Ok(());
+            let disaster_res = DisasterService::get_by_id(disaster_id).await;
+            if let Ok(disaster) = disaster_res {
+                return Ok(disaster);
+            }
         }
         Err(ServiceError::internal())
     }
