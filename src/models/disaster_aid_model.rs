@@ -4,8 +4,8 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::{
-    disaster_aid_attachment_model::DisasterAidAttachmentPayload,
-    disaster_aid_items_model::DisasterAidItemPayload,
+    disaster_aid_attachment_model::{DisasterAidAttachmentModel, DisasterAidAttachmentPayload},
+    disaster_aid_items_model::{DisasterAidItemModel, DisasterAidItemPayload},
 };
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
@@ -14,6 +14,12 @@ use crate::models::{
 pub struct DisasterAidModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DisasterAidWithAllRelations {
+    pub items: Vec<DisasterAidItemModel>,
+    pub attachments: Vec<DisasterAidAttachmentModel>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, Insertable)]

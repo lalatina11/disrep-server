@@ -10,6 +10,7 @@ use crate::{
     config::database_config::Database,
     error::ServiceError,
     models::{
+        disaster_aid_model::DisasterAidWithAllRelations,
         disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
@@ -25,6 +26,7 @@ pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
     pub images: Vec<DisasterAttachmentPayload>,
     pub author: UserModel,
+    pub aid: Vec<DisasterAidWithAllRelations>,
 }
 
 pub struct DisasterService;
@@ -69,6 +71,7 @@ impl DisasterService {
                             disaster,
                             author,
                             images,
+                            aid: vec![],
                         }
                     })
                     .collect();
@@ -159,6 +162,7 @@ impl DisasterService {
                     disaster,
                     author,
                     images,
+                    aid: vec![],
                 });
             }
         }
