@@ -27,14 +27,6 @@ pub struct DisasterAidAttachmentPayload {
 }
 
 impl DisasterAidAttachmentPayload {
-    pub fn fixed_media_url(self) -> Self {
-        Self {
-            media_url: CommonUtility::generate_media_url(self.media_url),
-        }
-    }
-}
-
-impl DisasterAidAttachmentPayload {
     pub fn to_records(
         &self,
         disaster_report_aid_id: Uuid,
@@ -43,5 +35,10 @@ impl DisasterAidAttachmentPayload {
             disaster_report_aid_id,
             media_url: self.media_url.clone(),
         }
+    }
+
+    pub fn fixed_media_url(self) -> Self {
+        let media_url = CommonUtility::generate_media_url(self.media_url);
+        Self { media_url }
     }
 }
