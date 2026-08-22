@@ -27,7 +27,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterWithAllRelations {
     pub disaster: DisasterReportsModel,
-    pub images: Vec<DisasterAttachmentPayload>,
+    pub attachments: Vec<DisasterAttachmentPayload>,
     pub author: UserModel,
     pub aids: Vec<DisasterAidWithAllRelations>,
 }
@@ -50,19 +50,19 @@ impl DisasterService {
                 .iter()
                 .map(|(report, _)| report.id)
                 .collect();
-            let all_images: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
+            let all_attachments: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
                 disaster_report_attachments::table
                     .filter(disaster_report_attachments::disaster_report_id.eq_any(&report_ids))
                     .select(DisasterReportAttachmentModel::as_select())
                     .load::<DisasterReportAttachmentModel>(conn);
-            if let Ok(images) = all_images {
+            if let Ok(attachments) = all_attachments {
                 let aid_res =
                     DiassterReportAidService::get_all(report_ids.iter().cloned().collect()).await;
                 if let Ok(aid_data) = aid_res {
                     let result = reports_with_users
                         .into_iter()
                         .map(|(disaster, author)| {
-                            let images = images
+                            let attachments = attachments
                                 .iter()
                                 .filter(|img| &img.disaster_report_id == &disaster.id)
                                 .map(|img| {
@@ -79,7 +79,7 @@ impl DisasterService {
                                 .collect();
                             DisasterWithAllRelations {
                                 disaster,
-                                images,
+                                attachments,
                                 author,
                                 aids,
                             }
@@ -152,29 +152,29 @@ impl DisasterService {
         }
 
         if let Ok((disaster, author)) = res {
-            let images_res: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
+            let attachment_res: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
                 disaster_report_attachments::table
                     .filter(
                         disaster_report_attachments::columns::disaster_report_id.eq(disaster.id),
                     )
                     .select(DisasterReportAttachmentModel::as_select())
                     .load(conn);
-            if let Ok(images) = images_res {
+            if let Ok(attachments) = attachment_res {
                 let diaster_aid_res = DiassterReportAidService::get_all(vec![disaster_id]).await;
-                let images = images
+                let attachments = attachments
                     .into_iter()
-                    .map(|img| {
-                        let disaster_image = DisasterAttachmentPayload {
-                            media_url: img.media_url,
+                    .map(|attch| {
+                        let attachment = DisasterAttachmentPayload {
+                            media_url: attch.media_url,
                         };
-                        disaster_image.fixed_media_url()
+                        attachment.fixed_media_url()
                     })
                     .collect();
                 if let Ok(aids) = diaster_aid_res {
                     return Ok(DisasterWithAllRelations {
                         disaster,
                         author,
-                        images,
+                        attachments,
                         aids: aids,
                     });
                 }
