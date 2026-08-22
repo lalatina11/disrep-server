@@ -95,7 +95,7 @@ impl DiassterReportAidService {
         let is_exist = DisasterService::check_existing(disaster_id).await;
 
         if !is_exist {
-            return Err(ServiceError::not_found(Some(
+            return Err(ServiceError::unprocessable(Some(
                 "Disaster Report Not Found".to_string(),
             )));
         }
