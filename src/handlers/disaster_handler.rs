@@ -17,7 +17,7 @@ pub struct DisasterHandler;
 
 impl DisasterHandler {
     pub async fn get_all() -> ApiResponseReturnTypeWithHeader<Vec<DisasterWithAllRelations>> {
-        let service = DisasterService::get_all();
+        let service = DisasterService::get_all().await;
         match service {
             Ok(data) => ApiResponse::success(Some(data), None, None),
             Err(err) => err.to_handler_error(),
