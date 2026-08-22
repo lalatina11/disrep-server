@@ -215,4 +215,26 @@ impl DisasterService {
 
         true
     }
+
+    pub async fn update_status(
+        disaster_id: Uuid,
+        status: DisasterStatus,
+    ) -> Result<DisasterWithAllRelations, ServiceError> {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::disaster_reports;
+        let disaster_update_res: Result<DisasterReportsModel, DieselError> =
+            diesel::update(disaster_reports::dsl::disaster_reports.find(disaster_id))
+                .set(disaster_reports::dsl::status.eq(status.to_string()))
+                .returning(DisasterReportsModel::as_returning())
+                .get_result(conn);
+
+        if let Ok(update_result) = disaster_update_res {
+            let disaster_res = Self::get_by_id(update_result.id).await;
+            if let Ok(disaster) = disaster_res {
+                return Ok(disaster);
+            }
+        }
+
+        Err(ServiceError::internal())
+    }
 }
