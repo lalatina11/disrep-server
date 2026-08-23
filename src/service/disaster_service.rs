@@ -242,10 +242,10 @@ impl DisasterService {
                 .get_result(conn);
 
         if let Ok(update_result) = disaster_update_res {
-            let disaster_res = Self::get_by_id(update_result.id).await;
-            if let Ok(disaster) = disaster_res {
-                return Ok(disaster);
-            }
+            let disaster = Self::get_by_id(update_result.id)
+                .await
+                .map_err(|_| ServiceError::internal())?;
+            return Ok(disaster);
         }
 
         Err(ServiceError::internal())
