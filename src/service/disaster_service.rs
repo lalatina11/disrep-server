@@ -191,7 +191,10 @@ impl DisasterService {
         _id: Uuid,
         payload: UpdateDisasterStatusPayload,
     ) -> Result<DisasterReportsModel, ServiceError> {
-        let status = DisasterStatus::from_str(payload.status);
+        let status = DisasterStatus::from_str(payload.status).map_err(|_| {
+            ServiceError::unprocessable(Some("Invalid Disaster report status!".to_string()))
+        })?;
+
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_reports;
         let _disaster = Self::get_by_id(_id).await?;

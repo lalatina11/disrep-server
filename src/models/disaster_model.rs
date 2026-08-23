@@ -6,6 +6,14 @@ use validator::Validate;
 
 use crate::models::disaster_report_attachment_model::DisasterAttachmentPayload;
 
+pub const ALLOWED_DISASTER_DISASTER_STATUS: [&str; 5] = [
+    "new",
+    "pending",
+    "aid_dispatched",
+    "aid_arrived",
+    "resolved",
+];
+
 pub enum DisasterStatus {
     Pending,
     New,
@@ -25,13 +33,14 @@ impl DisasterStatus {
         }
     }
 
-    pub fn from_str(status: String) -> Self {
+    pub fn from_str(status: String) -> Result<Self, ()> {
         match status.to_lowercase().as_str() {
-            "new" => Self::New,
-            "aid_dispatched" => Self::AidDispatched,
-            "aid_arrived" => Self::AidArrived,
-            "resolved" => Self::Resolved,
-            _else => Self::Pending,
+            "pending" => Ok(Self::Pending),
+            "new" => Ok(Self::New),
+            "aid_dispatched" => Ok(Self::AidDispatched),
+            "aid_arrived" => Ok(Self::AidArrived),
+            "resolved" => Ok(Self::Resolved),
+            _else => Err(()),
         }
     }
 }
