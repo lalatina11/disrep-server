@@ -11,10 +11,7 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_aid_model::DisasterAidWithAllRelations,
-        disaster_model::{
-            CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus,
-            UpdateDisasterStatusPayload,
-        },
+        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
             DisasterReportsAttachmentModelPayload,
@@ -187,33 +184,6 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub async fn approve(
-        _id: Uuid,
-        payload: UpdateDisasterStatusPayload,
-    ) -> Result<DisasterReportsModel, ServiceError> {
-        let status = DisasterStatus::from_str(payload.status).map_err(|_| {
-            ServiceError::unprocessable(Some("Invalid Disaster report status!".to_string()))
-        })?;
-
-        let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports;
-        let _disaster = Self::get_by_id(_id).await?;
-
-        let res: Result<DisasterReportsModel, DieselError> =
-            diesel::update(disaster_reports::table.find(_disaster.disaster.id))
-                .set((
-                    disaster_reports::status.eq(status.to_string()),
-                    disaster_reports::updated_at.eq(Utc::now()),
-                ))
-                .returning(DisasterReportsModel::as_returning())
-                .get_result(conn);
-
-        match res {
-            Err(_) => Err(ServiceError::internal()),
-            Ok(data) => Ok(data),
-        }
-    }
-
     pub async fn check_existing(disaster_id: Uuid) -> bool {
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_reports;
@@ -237,7 +207,10 @@ impl DisasterService {
         use crate::schema::disaster_reports;
         let disaster_update_res: Result<DisasterReportsModel, DieselError> =
             diesel::update(disaster_reports::dsl::disaster_reports.find(disaster_id))
-                .set(disaster_reports::dsl::status.eq(status.to_string()))
+                .set((
+                    disaster_reports::dsl::status.eq(status.to_string()),
+                    disaster_reports::dsl::updated_at.eq(Utc::now()),
+                ))
                 .returning(DisasterReportsModel::as_returning())
                 .get_result(conn);
 
