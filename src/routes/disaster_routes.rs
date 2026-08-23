@@ -31,7 +31,7 @@ impl DisasterRoutes {
 
     fn admin_authority() -> Router {
         Router::new()
-            .route("/{id}/approve", patch(DisasterHandler::update_status))
+            .route("/{id}/status", patch(DisasterHandler::update_status))
             .layer(from_fn(AdminMiddleware::handle))
     }
 }
