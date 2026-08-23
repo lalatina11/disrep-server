@@ -11,7 +11,10 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_aid_model::DisasterAidWithAllRelations,
-        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
+        disaster_model::{
+            CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus,
+            UpdateDisasterStatusPayload,
+        },
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
             DisasterReportsAttachmentModelPayload,
@@ -184,14 +187,21 @@ impl DisasterService {
         Err(ServiceError::internal())
     }
 
-    pub async fn approve(_id: Uuid) -> Result<DisasterReportsModel, ServiceError> {
+    pub async fn approve(
+        _id: Uuid,
+        payload: UpdateDisasterStatusPayload,
+    ) -> Result<DisasterReportsModel, ServiceError> {
+        let status = DisasterStatus::from_str(payload.status);
         let conn = &mut Database::establish_connection();
-        use crate::schema::disaster_reports::dsl::*;
+        use crate::schema::disaster_reports;
         let _disaster = Self::get_by_id(_id).await?;
 
         let res: Result<DisasterReportsModel, DieselError> =
-            diesel::update(disaster_reports.find(_disaster.disaster.id))
-                .set((status.eq("new".to_string()), updated_at.eq(Utc::now())))
+            diesel::update(disaster_reports::table.find(_disaster.disaster.id))
+                .set((
+                    disaster_reports::status.eq(status.to_string()),
+                    disaster_reports::updated_at.eq(Utc::now()),
+                ))
                 .returning(DisasterReportsModel::as_returning())
                 .get_result(conn);
 

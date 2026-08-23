@@ -25,7 +25,7 @@ impl DisasterStatus {
         }
     }
 
-    pub fn from_str(status: &str) -> Self {
+    pub fn from_str(status: String) -> Self {
         match status.to_lowercase().as_str() {
             "new" => Self::New,
             "aid_dispatched" => Self::AidDispatched,
@@ -142,4 +142,9 @@ impl CreateDisasterReportWithImage {
                 .unwrap_or(DisasterStatus::Pending.to_string()),
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateDisasterStatusPayload {
+    pub status: String,
 }
