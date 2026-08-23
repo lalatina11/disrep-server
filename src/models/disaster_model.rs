@@ -17,11 +17,21 @@ pub enum DisasterStatus {
 impl DisasterStatus {
     pub fn to_string(self) -> String {
         match self {
-            DisasterStatus::AidArrived => "aid_arrived".to_string(),
-            DisasterStatus::Pending => "pending".to_string(),
             DisasterStatus::New => "new".to_string(),
+            DisasterStatus::Pending => "pending".to_string(),
             DisasterStatus::AidDispatched => "aid_dispatched".to_string(),
+            DisasterStatus::AidArrived => "aid_arrived".to_string(),
             DisasterStatus::Resolved => "resolved".to_string(),
+        }
+    }
+
+    pub fn from_str(status: &str) -> Self {
+        match status.to_lowercase().as_str() {
+            "new" => Self::New,
+            "aid_dispatched" => Self::AidDispatched,
+            "aid_arrived" => Self::AidArrived,
+            "resolved" => Self::Resolved,
+            _else => Self::Pending,
         }
     }
 }
