@@ -3,7 +3,9 @@ use reqwest::StatusCode;
 
 use crate::{
     models::{
-        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel},
+        disaster_model::{
+            CreateDisasterReportWithImage, DisasterReportsModel, UpdateDisasterStatusPayload,
+        },
         user_model::UserModel,
     },
     service::disaster_service::{DisasterService, DisasterWithAllRelations},
@@ -62,10 +64,11 @@ impl DisasterHandler {
         }
     }
 
-    pub async fn approve(
+    pub async fn update_status(
         Path(id): Path<uuid::Uuid>,
-    ) -> ApiResponseReturnTypeWithHeader<DisasterReportsModel> {
-        let service = DisasterService::approve(id).await;
+        JsonParser(payload): JsonParser<UpdateDisasterStatusPayload>,
+    ) -> ApiResponseReturnTypeWithHeader<DisasterWithAllRelations> {
+        let service = DisasterService::update_status(id, payload).await;
         match service {
             Err(err) => err.to_handler_error(),
             Ok(disaster) => ApiResponse::success(Some(disaster), None, None),

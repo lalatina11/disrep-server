@@ -33,14 +33,14 @@ impl DisasterStatus {
         }
     }
 
-    pub fn from_str(status: String) -> Result<Self, ()> {
+    pub fn from_str(status: String) -> Result<Self, String> {
         match status.to_lowercase().as_str() {
             "pending" => Ok(Self::Pending),
             "new" => Ok(Self::New),
             "aid_dispatched" => Ok(Self::AidDispatched),
             "aid_arrived" => Ok(Self::AidArrived),
             "resolved" => Ok(Self::Resolved),
-            _else => Err(()),
+            _else => Err(String::from("Invalid disaster status")),
         }
     }
 }

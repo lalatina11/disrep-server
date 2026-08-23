@@ -11,7 +11,10 @@ use crate::{
     error::ServiceError,
     models::{
         disaster_aid_model::DisasterAidWithAllRelations,
-        disaster_model::{CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus},
+        disaster_model::{
+            CreateDisasterReportWithImage, DisasterReportsModel, DisasterStatus,
+            UpdateDisasterStatusPayload,
+        },
         disaster_report_attachment_model::{
             DisasterAttachmentPayload, DisasterReportAttachmentModel,
             DisasterReportsAttachmentModelPayload,
@@ -201,8 +204,10 @@ impl DisasterService {
 
     pub async fn update_status(
         disaster_id: Uuid,
-        status: DisasterStatus,
+        payload: UpdateDisasterStatusPayload,
     ) -> Result<DisasterWithAllRelations, ServiceError> {
+        let status = DisasterStatus::from_str(payload.status)
+            .map_err(|msg| ServiceError::unprocessable(Some(msg)))?;
         let conn = &mut Database::establish_connection();
         use crate::schema::disaster_reports;
         let disaster_update_res: Result<DisasterReportsModel, DieselError> =
