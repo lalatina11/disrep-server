@@ -145,10 +145,10 @@ impl DiassterReportAidService {
             let update_payload = UpdateDisasterStatusPayload {
                 status: DisasterStatus::AidDispatched.to_string(),
             };
-            let disaster_res = DisasterService::update_status(disaster_id, update_payload).await;
-            if let Ok(disaster) = disaster_res {
-                return Ok(disaster);
-            }
+            let disaster = DisasterService::update_status(disaster_id, update_payload)
+                .await
+                .map_err(|_| ServiceError::internal())?;
+            return Ok(disaster);
         }
         Err(ServiceError::internal())
     }
