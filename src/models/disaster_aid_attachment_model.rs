@@ -25,7 +25,7 @@ pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
 pub struct DisasterAidAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
-    pub media_type: Option<String>,
+    pub media_type: String,
 }
 
 impl DisasterAidAttachmentPayload {
@@ -45,7 +45,7 @@ impl DisasterAidAttachmentPayload {
         let media_url = CommonUtility::generate_media_url(self.media_url);
         Self {
             media_url,
-            media_type: Some(self.media_type.unwrap_or("".to_string())),
+            media_type: self.media_type,
         }
     }
 }
