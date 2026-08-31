@@ -5,6 +5,7 @@ diesel::table! {
         id -> Uuid,
         disaster_report_aid_id -> Uuid,
         media_url -> Text,
+        media_type -> Text,
     }
 }
 
@@ -31,6 +32,7 @@ diesel::table! {
         id -> Uuid,
         disaster_report_id -> Uuid,
         media_url -> Text,
+        media_type -> Text,
     }
 }
 
