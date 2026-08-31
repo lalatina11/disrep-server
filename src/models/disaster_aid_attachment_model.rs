@@ -1,9 +1,9 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
-use crate::utils::CommonUtility;
+use crate::{constants::ALLOWED_DISASTER_MEDIA_TYPES, utils::CommonUtility};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
@@ -26,7 +26,15 @@ pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
 pub struct DisasterAidAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
+    #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_type: String,
+}
+
+fn validate_media_type(media_type: &str) -> Result<(), ValidationError> {
+    if !ALLOWED_DISASTER_MEDIA_TYPES.contains(&media_type) {
+        return Err(ValidationError::new("Only image and video allowed"));
+    }
+    return Ok(());
 }
 
 impl DisasterAidAttachmentPayload {
