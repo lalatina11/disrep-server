@@ -12,6 +12,7 @@ pub struct DisasterAidAttachmentModel {
     pub id: Uuid,
     pub disaster_report_aid_id: Uuid,
     pub media_url: String,
+    pub media_type: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Insertable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
