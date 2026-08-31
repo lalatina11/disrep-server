@@ -67,12 +67,12 @@ impl DisasterService {
                         .map(|(disaster, author)| {
                             let attachments = attachments
                                 .iter()
-                                .filter(|img| &img.disaster_report_id == &disaster.id)
-                                .map(|img| {
-                                    let disaster_image = DisasterAttachmentPayload {
-                                        media_url: img.media_url.clone(),
+                                .filter(|att| &att.disaster_report_id == &disaster.id)
+                                .map(|att| {
+                                    let disaster_attachment = DisasterAttachmentPayload {
+                                        media_url: att.media_url.clone(),
                                     };
-                                    disaster_image.fixed_media_url()
+                                    disaster_attachment.fixed_media_url()
                                 })
                                 .collect();
                             let aids = aid_data
