@@ -31,13 +31,12 @@ pub struct DisasterAidAttachmentPayload {
 impl DisasterAidAttachmentPayload {
     pub fn to_records(
         &self,
-        media_type: String,
         disaster_report_aid_id: Uuid,
     ) -> DisasterAidAttachmentPayloadWidhDisasterAidId {
         DisasterAidAttachmentPayloadWidhDisasterAidId {
             disaster_report_aid_id,
             media_url: self.media_url.clone(),
-            media_type,
+            media_type: self.media_type.clone(),
         }
     }
 

@@ -35,18 +35,24 @@ pub struct DisasterReportsAttachmentModel {
 pub struct DisasterReportsAttachmentModelPayload {
     pub disaster_report_id: Uuid,
     pub media_url: String,
+    pub media_type: String,
 }
 
 #[derive(Serialize, Deserialize, Validate, Clone, Debug)]
 pub struct DisasterAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
+    #[validate(length(min = 1, message = "Invalid attachment URL"))]
+    pub media_type: String,
 }
 
 impl DisasterAttachmentPayload {
     pub fn fixed_media_url(self) -> Self {
         let media_url = CommonUtility::generate_media_url(self.media_url);
-        Self { media_url }
+        Self {
+            media_url,
+            media_type: self.media_type,
+        }
     }
 }
 
@@ -55,6 +61,7 @@ impl DisasterAttachmentPayload {
         DisasterReportsAttachmentModelPayload {
             disaster_report_id,
             media_url: self.media_url,
+            media_type: self.media_type,
         }
     }
 }
