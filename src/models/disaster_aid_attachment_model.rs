@@ -18,27 +18,34 @@ pub struct DisasterAidAttachmentModel {
 pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
     pub disaster_report_aid_id: Uuid,
     pub media_url: String,
+    pub media_type: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct DisasterAidAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
+    pub media_type: Option<String>,
 }
 
 impl DisasterAidAttachmentPayload {
     pub fn to_records(
         &self,
+        media_type: String,
         disaster_report_aid_id: Uuid,
     ) -> DisasterAidAttachmentPayloadWidhDisasterAidId {
         DisasterAidAttachmentPayloadWidhDisasterAidId {
             disaster_report_aid_id,
             media_url: self.media_url.clone(),
+            media_type,
         }
     }
 
     pub fn fixed_media_url(self) -> Self {
         let media_url = CommonUtility::generate_media_url(self.media_url);
-        Self { media_url }
+        Self {
+            media_url,
+            media_type: Some(self.media_type.unwrap_or("".to_string())),
+        }
     }
 }
