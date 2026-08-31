@@ -26,7 +26,7 @@ pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
 pub struct DisasterAidAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
-    #[validate(length(min = 1, message = "Invalid attachment URL"))]
+    #[validate(custom(function = "validate_media_type"))]
     pub media_type: String,
 }
 
