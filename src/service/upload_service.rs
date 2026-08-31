@@ -3,7 +3,7 @@ use axum::extract::Multipart;
 use crate::{
     error::ServiceError, models::form_data::FileFormData,
     service::supabase_service::SupabaseService,
-    utils::responses::storage_response::SupabaseStorageResult,
+    utils::responses::storage_response::ParsedSupabaseResult,
 };
 
 pub struct UploadService;
@@ -63,7 +63,7 @@ impl UploadService {
         Ok(file)
     }
 
-    pub async fn upload_image(multipart: Multipart) -> Result<SupabaseStorageResult, ServiceError> {
+    pub async fn upload_image(multipart: Multipart) -> Result<ParsedSupabaseResult, ServiceError> {
         let buff = Self::parse_image_multipart(multipart).await;
 
         if let Err(err) = &buff {
@@ -81,7 +81,7 @@ impl UploadService {
         }
         Err(ServiceError::internal())
     }
-    pub async fn upload_video(multipart: Multipart) -> Result<SupabaseStorageResult, ServiceError> {
+    pub async fn upload_video(multipart: Multipart) -> Result<ParsedSupabaseResult, ServiceError> {
         let buff = Self::parse_video_multipart(multipart).await;
 
         if let Err(err) = &buff {

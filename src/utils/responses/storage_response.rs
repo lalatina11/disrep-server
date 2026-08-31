@@ -20,13 +20,15 @@ pub struct SupabaseStorageResult {
 pub struct ParsedSupabaseResult {
     pub media_url: String,
     pub media_id: String,
+    pub media_type: String,
 }
 
 impl SupabaseStorageResult {
-    pub fn parsed(self) -> ParsedSupabaseResult {
+    pub fn parsed(self, media_type: String) -> ParsedSupabaseResult {
         ParsedSupabaseResult {
             media_url: self.key,
             media_id: self.id,
+            media_type,
         }
     }
 }

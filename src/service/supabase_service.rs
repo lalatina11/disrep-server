@@ -7,7 +7,10 @@ use crate::{
         auth_model::{RefreshTokenPayload, SignInPayload, SignUpPayload},
         form_data::FileFormData,
     },
-    utils::{CommonUtility, responses::storage_response::SupabaseStorageResult},
+    utils::{
+        CommonUtility,
+        responses::storage_response::{ParsedSupabaseResult, SupabaseStorageResult},
+    },
 };
 
 pub struct SupabaseService;
@@ -135,7 +138,7 @@ impl SupabaseService {
         Ok(res)
     }
 
-    pub async fn upload_file(file: FileFormData) -> Result<SupabaseStorageResult, ServiceError> {
+    pub async fn upload_file(file: FileFormData) -> Result<ParsedSupabaseResult, ServiceError> {
         match file.bytes {
             None => Err(ServiceError::internal()),
             Some(bytes) => {
@@ -198,7 +201,16 @@ impl SupabaseService {
                     })?;
 
                 match serde_json::from_str::<SupabaseStorageResult>(&res_text) {
-                    Ok(res) => Ok(res),
+                    Ok(res) => {
+                        let media_type = if content_type.starts_with("image") {
+                            "image".to_string()
+                        } else if content_type.starts_with("video") {
+                            "video".to_string()
+                        } else {
+                            String::new()
+                        };
+                        Ok(res.parsed(media_type))
+                    }
                     Err(_) => match serde_json::from_str::<SupabaseStorageErrorResponse>(&res_text)
                     {
                         Ok(err) => Err(err.to_service_error()),

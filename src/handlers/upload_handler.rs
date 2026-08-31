@@ -16,7 +16,7 @@ impl UploadHandler {
         let service = UploadService::upload_image(multipart).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(res) => res.parsed().into_response(),
+            Ok(res) => res.into_response(),
         }
     }
     pub async fn video(
@@ -25,7 +25,7 @@ impl UploadHandler {
         let service = UploadService::upload_video(multipart).await;
         match service {
             Err(err) => err.to_handler_error(),
-            Ok(res) => res.parsed().into_response(),
+            Ok(res) => res.into_response(),
         }
     }
 }
