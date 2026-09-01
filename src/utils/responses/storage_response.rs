@@ -1,7 +1,10 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader};
+use crate::utils::{
+    CommonUtility,
+    responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader},
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StorageResultURL {
@@ -21,14 +24,17 @@ pub struct ParsedSupabaseResult {
     pub media_url: String,
     pub media_id: String,
     pub media_type: String,
+    pub media_preview: String,
 }
 
 impl SupabaseStorageResult {
     pub fn parsed(self, media_type: String) -> ParsedSupabaseResult {
+        let media_preview = CommonUtility::generate_media_url(self.key.clone());
         ParsedSupabaseResult {
             media_url: self.key,
             media_id: self.id,
             media_type,
+            media_preview,
         }
     }
 }
