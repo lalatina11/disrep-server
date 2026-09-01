@@ -1,9 +1,9 @@
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
-use crate::utils::CommonUtility;
+use crate::{constants::ALLOWED_DISASTER_MEDIA_TYPES, utils::CommonUtility};
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::disaster_report_attachments)]
@@ -12,13 +12,7 @@ pub struct DisasterReportAttachmentModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
     pub media_url: String,
-}
-
-#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::disaster_report_attachments)]
-pub struct CreateDisasterReportImage {
-    pub disaster_report_id: Uuid,
-    pub media_url: String,
+    pub media_type: String,
 }
 
 #[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
@@ -28,6 +22,7 @@ pub struct DisasterReportsAttachmentModel {
     pub id: Uuid,
     pub disaster_report_id: Uuid,
     pub media_url: String,
+    pub media_type: String,
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize, Validate)]
@@ -42,8 +37,15 @@ pub struct DisasterReportsAttachmentModelPayload {
 pub struct DisasterAttachmentPayload {
     #[validate(length(min = 1, message = "Invalid attachment URL"))]
     pub media_url: String,
-    #[validate(length(min = 1, message = "Invalid attachment URL"))]
+    #[validate(custom(function = "validate_media_type"))]
     pub media_type: String,
+}
+
+fn validate_media_type(media_type: &str) -> Result<(), ValidationError> {
+    if !ALLOWED_DISASTER_MEDIA_TYPES.contains(&media_type) {
+        return Err(ValidationError::new("Only image and video allowed"));
+    }
+    return Ok(());
 }
 
 impl DisasterAttachmentPayload {

@@ -71,6 +71,7 @@ impl DisasterService {
                                 .map(|att| {
                                     let disaster_attachment = DisasterAttachmentPayload {
                                         media_url: att.media_url.clone(),
+                                        media_type: att.media_type.clone(),
                                     };
                                     disaster_attachment.fixed_media_url()
                                 })
@@ -169,6 +170,7 @@ impl DisasterService {
                     .map(|attch| {
                         let attachment = DisasterAttachmentPayload {
                             media_url: attch.media_url,
+                            media_type: attch.media_type,
                         };
                         attachment.fixed_media_url()
                     })
