@@ -65,6 +65,7 @@ impl DiassterReportAidService {
                                         &attachment.disaster_report_aid_id == &aid.id
                                     })
                                     .cloned()
+                                    .map(|att| att.fixed_media_url())
                                     .collect();
                             let items: Vec<DisasterAidItemModel> = disaster_aid_items_data
                                 .iter()

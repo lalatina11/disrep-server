@@ -14,6 +14,19 @@ pub struct DisasterAidAttachmentModel {
     pub media_url: String,
     pub media_type: String,
 }
+
+impl DisasterAidAttachmentModel {
+    pub fn fixed_media_url(self) -> Self {
+        let media_url = CommonUtility::generate_media_url(self.media_url);
+        Self {
+            id: self.id,
+            media_url,
+            media_type: self.media_type,
+            disaster_report_aid_id: self.disaster_report_aid_id,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Insertable)]
 #[diesel(table_name=crate::schema::disaster_report_aid_attachments)]
 pub struct DisasterAidAttachmentPayloadWidhDisasterAidId {
