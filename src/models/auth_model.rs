@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
@@ -17,7 +19,9 @@ pub struct SignUpAdditionalData {
 
 fn validate_user_role(role: &str) -> Result<(), ValidationError> {
     if !ROLE_LIST.contains(&role) {
-        return Err(ValidationError::new("Invalid user role"));
+        let mut error = ValidationError::new("Invalid user role");
+        error.message = Some(Cow::from("Invalid user role"));
+        return Err(error);
     }
     Ok(())
 }

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -45,7 +47,9 @@ pub struct DisasterAidAttachmentPayload {
 
 fn validate_media_type(media_type: &str) -> Result<(), ValidationError> {
     if !ALLOWED_DISASTER_MEDIA_TYPES.contains(&media_type) {
-        return Err(ValidationError::new("Only image and video allowed"));
+        let mut error = ValidationError::new("Only image and video allowed");
+        error.message = Some(Cow::from("Only image and video allowed"));
+        return Err(error);
     }
     return Ok(());
 }
