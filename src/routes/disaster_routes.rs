@@ -1,7 +1,7 @@
 use axum::{
     Router,
     middleware::from_fn,
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
 };
 
 use crate::{
@@ -31,6 +31,7 @@ impl DisasterRoutes {
 
     fn admin_authority() -> Router {
         Router::new()
+            .route("/{id}", delete(DisasterHandler::delete))
             .route("/{id}/status", patch(DisasterHandler::update_status))
             .layer(from_fn(AdminMiddleware::handle))
     }
