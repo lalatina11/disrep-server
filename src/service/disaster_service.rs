@@ -64,7 +64,7 @@ impl DisasterService {
                 if let Ok(aid_data) = aid_res {
                     let result = reports_with_users
                         .into_iter()
-                        .map(|(disaster, author)| {
+                        .map(|(disaster, raw_author)| {
                             let attachments = attachments
                                 .iter()
                                 .filter(|att| &att.disaster_report_id == &disaster.id)
@@ -81,6 +81,11 @@ impl DisasterService {
                                 .filter(|aid| &aid.disaster_report_id == &disaster.id)
                                 .cloned()
                                 .collect();
+                            let author = if disaster.is_anon.unwrap_or(false) {
+                                raw_author.to_anon()
+                            } else {
+                                raw_author
+                            };
                             DisasterWithAllRelations {
                                 disaster,
                                 attachments,
