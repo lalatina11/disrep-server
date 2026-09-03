@@ -74,4 +74,12 @@ impl DisasterHandler {
             Ok(disaster) => ApiResponse::success(Some(disaster), None, None),
         }
     }
+
+    pub async fn delete(Path(id): Path<uuid::Uuid>) -> ApiResponseReturnTypeWithHeader<()> {
+        let service = DisasterService::delete(id).await;
+        match service {
+            Err(err) => err.to_handler_error(),
+            Ok(_) => ApiResponse::success(None, None, None),
+        }
+    }
 }
