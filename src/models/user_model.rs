@@ -18,7 +18,6 @@ pub struct UserModel {
     pub display_name: String,
     pub role: String,
     pub avatar: Option<String>,
-    pub avatar_storage_url: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -31,7 +30,6 @@ impl UserModel {
             display_name: "anonymous".to_string(),
             role: "anonymous".to_string(),
             avatar: Some("".to_string()),
-            avatar_storage_url: Some("".to_string()),
             created_at: Utc::now(),
             updated_at: Utc::now(),
         }

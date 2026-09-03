@@ -57,7 +57,7 @@ pub struct DisasterReportsModel {
     pub city: String,
     pub lat: f64,
     pub lng: f64,
-    pub is_anon: Option<bool>,
+    pub is_anon: bool,
     pub status: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

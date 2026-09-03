@@ -47,7 +47,7 @@ diesel::table! {
         city -> Varchar,
         lat -> Float8,
         lng -> Float8,
-        is_anon -> Nullable<Bool>,
+        is_anon -> Bool,
         status -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -62,7 +62,6 @@ diesel::table! {
         display_name -> Varchar,
         role -> Text,
         avatar -> Nullable<Text>,
-        avatar_storage_url -> Nullable<Text>,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

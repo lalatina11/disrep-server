@@ -81,7 +81,7 @@ impl DisasterService {
                                 .filter(|aid| &aid.disaster_report_id == &disaster.id)
                                 .cloned()
                                 .collect();
-                            let author = if disaster.is_anon.unwrap_or(false) {
+                            let author = if disaster.is_anon {
                                 raw_author.to_anon()
                             } else {
                                 raw_author
@@ -181,7 +181,7 @@ impl DisasterService {
                     })
                     .collect();
 
-                let author = if disaster.is_anon.unwrap_or(false) {
+                let author = if disaster.is_anon {
                     user.to_anon()
                 } else {
                     user
