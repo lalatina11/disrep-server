@@ -235,4 +235,28 @@ impl DisasterService {
 
         Err(ServiceError::internal())
     }
+
+    pub async fn delete(disaster_id: Uuid) -> Result<(), ServiceError> {
+        use crate::schema::disaster_reports;
+        let is_exist = Self::check_existing(disaster_id).await;
+
+        if !is_exist {
+            return Err(ServiceError::not_found(Some(
+                "Disaster report is not available.".to_string(),
+            )));
+        }
+
+        let conn = &mut Database::establish_connection();
+
+        let res: Result<_, DieselError> = diesel::delete(
+            disaster_reports::table.filter(disaster_reports::dsl::id.eq(disaster_id)),
+        )
+        .execute(conn);
+
+        if let Ok(_) = res {
+            return Ok(());
+        }
+
+        Err(ServiceError::internal())
+    }
 }
