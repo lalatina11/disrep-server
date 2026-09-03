@@ -54,7 +54,7 @@ impl DisasterHandler {
                     return ApiResponse::success(Some(data), None, None);
                 }
                 if let Some(user) = authenticated {
-                    let is_owner = &user.id == &data.disaster.id;
+                    let is_owner = &user.id == &data.disaster.user_id;
                     if data.disaster.status == "pending"
                         && (user.is_authorize_as_admins() || is_owner)
                     {
