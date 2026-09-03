@@ -160,7 +160,7 @@ impl DisasterService {
             )));
         }
 
-        if let Ok((disaster, author)) = res {
+        if let Ok((disaster, user)) = res {
             let attachment_res: Result<Vec<DisasterReportAttachmentModel>, DieselError> =
                 disaster_report_attachments::table
                     .filter(
@@ -180,12 +180,19 @@ impl DisasterService {
                         attachment.fixed_media_url()
                     })
                     .collect();
+
+                let author = if disaster.is_anon.unwrap_or(false) {
+                    user.to_anon()
+                } else {
+                    user
+                };
+
                 if let Ok(aids) = diaster_aid_res {
                     return Ok(DisasterWithAllRelations {
                         disaster,
                         author,
                         attachments,
-                        aids: aids,
+                        aids,
                     });
                 }
             }
