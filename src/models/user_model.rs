@@ -24,6 +24,21 @@ pub struct UserModel {
 }
 
 impl UserModel {
+    pub fn to_anon(self) -> Self {
+        UserModel {
+            id: Uuid::new_v4(),
+            email: "anonymous@anon.com".to_string(),
+            display_name: "anonymous".to_string(),
+            role: "anonymous".to_string(),
+            avatar: Some("".to_string()),
+            avatar_storage_url: Some("".to_string()),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+}
+
+impl UserModel {
     pub fn is_authorize_as_admins(&self) -> bool {
         ADMIN_ROLES.contains(&self.role.as_str())
     }
