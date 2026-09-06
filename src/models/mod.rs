@@ -1,4 +1,5 @@
 pub mod auth_model;
+pub mod auth_update_user_model;
 pub mod disaster_aid_attachment_model;
 pub mod disaster_aid_items_model;
 pub mod disaster_aid_model;
