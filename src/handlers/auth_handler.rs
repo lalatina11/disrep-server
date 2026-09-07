@@ -8,11 +8,12 @@ use reqwest::StatusCode;
 use crate::{
     models::{
         auth_model::{AuthPayload, RefreshTokenPayload, SignInPayload, SignUpPayload},
-        auth_update_user_model::AuthUpdateUserPayload,
+        auth_update_user_model::{AuthUpdateUserPayload, UpdatePasswordPayload},
         user_model::UserModel,
     },
     service::auth_service::AuthService,
     utils::{
+        CommonUtility,
         request::json_parser::JsonParser,
         responses::api_responses::{ApiResponse, ApiResponseReturnTypeWithHeader, HANDLED_HEADER},
     },
@@ -187,6 +188,18 @@ impl AuthHandler {
                 Some("Success to edit profile".to_string()),
                 None,
             ),
+            Err(err) => err.to_handler_error(),
+        }
+    }
+
+    pub async fn update_password(
+        headers: HeaderMap,
+        JsonParser(payload): JsonParser<UpdatePasswordPayload>,
+    ) -> ApiResponseReturnTypeWithHeader<()> {
+        let token = CommonUtility::get_access_token_from_headers(&headers);
+        let service = AuthService::update_password(token, payload).await;
+        match service {
+            Ok(_) => ApiResponse::success(None, Some("Update Password Success!".to_string()), None),
             Err(err) => err.to_handler_error(),
         }
     }
