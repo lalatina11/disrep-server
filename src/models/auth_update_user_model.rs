@@ -122,8 +122,16 @@ pub struct Identity {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct UpdatePasswordPayload {
-    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
+    #[validate(length(
+        min = 8,
+        max = 32,
+        message = "Current Password must between 8-32 characters"
+    ))]
     pub current_password: String,
-    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
+    #[validate(length(
+        min = 8,
+        max = 32,
+        message = "New Password must between 8-32 characters"
+    ))]
     pub new_password: String,
 }
