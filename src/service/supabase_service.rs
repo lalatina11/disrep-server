@@ -226,14 +226,16 @@ impl SupabaseService {
     }
 
     pub async fn update_user(
+        token: String,
         payload: AuthUpdateUserPayload,
     ) -> Result<UpdateUserResult, ServiceError> {
         let supabase_config = SupabaseConfig::new();
         let fetch = Client::new();
-        let url = format!("{}/auth/v1/signup", supabase_config.project_url);
+        let url = format!("{}/auth/v1/user", supabase_config.project_url);
         let res = fetch
-            .post(url)
+            .put(url)
             .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header(HeaderType::AUTHORIZATION, token)
             .header("apikey", supabase_config.publishable_key)
             .json(&payload)
             .send()

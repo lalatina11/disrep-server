@@ -196,6 +196,7 @@ impl AuthService {
     }
 
     pub async fn update_profile(
+        token: String,
         user: UserModel,
         payload: AuthUpdateUserPayload,
     ) -> Result<UserModel, ServiceError> {
@@ -220,7 +221,8 @@ impl AuthService {
             avatar,
         };
         let update_profile_res =
-            SupabaseService::update_user(update_profile_payload.to_update_user_payload()).await?;
+            SupabaseService::update_user(token, update_profile_payload.to_update_user_payload())
+                .await?;
 
         let update_user_res = UserService::update_user(
             user.id,

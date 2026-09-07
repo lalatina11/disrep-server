@@ -170,10 +170,17 @@ impl AuthHandler {
     }
 
     pub async fn update_profile(
+        headers: HeaderMap,
         Extension(user): Extension<UserModel>,
         JsonParser(payload): JsonParser<AuthUpdateUserPayload>,
     ) -> ApiResponseReturnTypeWithHeader<UserModel> {
-        let service = AuthService::update_profile(user, payload).await;
+        let token = headers
+            .get(HeaderType::AUTHORIZATION)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string())
+            .unwrap_or("".to_string());
+
+        let service = AuthService::update_profile(token, user, payload).await;
         match service {
             Ok(data) => ApiResponse::success(
                 Some(data),
