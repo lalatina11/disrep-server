@@ -26,6 +26,7 @@ impl ProtectedAuthRoutes {
             .route("/me", get(AuthHandler::get_user))
             .route("/sign-out", post(AuthHandler::sign_out))
             .route("/profile", patch(AuthHandler::update_profile))
+            .route("/password", patch(AuthHandler::update_password))
             .layer(from_fn(AuthMiddleware::handle))
     }
 }
