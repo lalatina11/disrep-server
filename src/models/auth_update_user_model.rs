@@ -68,16 +68,17 @@ impl UpdateUserResult {
             .display_name
             .unwrap_or(current_user.display_name);
         let new_avatar = UserService::generate_avatar(&display_name);
+        let avatar: String = if let Some(avatar) = self.user_metadata.avatar {
+            if avatar != "" { avatar } else { new_avatar }
+        } else {
+            current_user.avatar.unwrap_or(new_avatar)
+        };
         NewUser {
             id: self.id,
             email: self.user_metadata.email,
             display_name,
             role: current_user.role,
-            avatar: Some(
-                self.user_metadata
-                    .avatar
-                    .unwrap_or(current_user.avatar.unwrap_or(new_avatar)),
-            ),
+            avatar: Some(avatar),
         }
     }
 }

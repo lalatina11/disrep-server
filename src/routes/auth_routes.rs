@@ -1,7 +1,7 @@
 use axum::{
     Router,
     middleware::from_fn,
-    routing::{get, post},
+    routing::{get, patch, post},
 };
 
 use crate::{handlers::auth_handler::AuthHandler, middleware::auth_middleware::AuthMiddleware};
@@ -25,6 +25,7 @@ impl ProtectedAuthRoutes {
         Router::new()
             .route("/me", get(AuthHandler::get_user))
             .route("/sign-out", post(AuthHandler::sign_out))
+            .route("/update-profile", patch(AuthHandler::update_profile))
             .layer(from_fn(AuthMiddleware::handle))
     }
 }
