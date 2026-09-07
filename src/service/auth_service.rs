@@ -218,6 +218,9 @@ impl AuthService {
             display_name,
             avatar,
         };
+
+        update_profile_payload.validate()?;
+
         let update_profile_res =
             SupabaseService::update_user(token, update_profile_payload.to_update_user_payload())
                 .await?;
@@ -230,4 +233,6 @@ impl AuthService {
 
         Ok(update_user_res)
     }
+
+    pub async fn update_password() {}
 }
