@@ -6,7 +6,7 @@ use crate::{
 };
 use validator::Validate;
 
-use diesel::{prelude::*, result::Error};
+use diesel::{prelude::*, result::Error as DieselError};
 use uuid::Uuid;
 
 pub struct UserService;
@@ -22,7 +22,7 @@ impl UserService {
             avatar: Some(UserService::generate_avatar(&payload.display_name)),
         };
 
-        let query: Result<UserModel, Error> = diesel::insert_into(users_table::table)
+        let query: Result<UserModel, DieselError> = diesel::insert_into(users_table::table)
             .values(payload)
             .returning(UserModel::as_returning())
             .get_result(conn);
@@ -37,7 +37,7 @@ impl UserService {
     pub async fn get_user_by_id(user_id: Uuid) -> Result<UserModel, ServiceError> {
         use crate::schema::users::dsl::*;
         let conn = &mut Database::establish_connection();
-        let query: Result<UserModel, Error> = users
+        let query: Result<UserModel, DieselError> = users
             .find(user_id)
             .select(UserModel::as_select())
             .first::<UserModel>(conn);
@@ -51,5 +51,27 @@ impl UserService {
     pub fn generate_avatar(name: &str) -> String {
         let util = UtilityConfig::new();
         format!("{}{}", util.avatar_generator_base_url, name)
+    }
+
+    pub async fn update_user(
+        user_id: uuid::Uuid,
+        payload: NewUser,
+    ) -> Result<UserModel, ServiceError> {
+        let conn = &mut Database::establish_connection();
+        use crate::schema::users;
+        let update_res: Result<UserModel, DieselError> = diesel::update(users::table.find(user_id))
+            .set((
+                users::display_name.eq(payload.display_name),
+                users::email.eq(payload.email),
+                users::avatar.eq(payload.avatar),
+            ))
+            .returning(UserModel::as_returning())
+            .get_result(conn);
+
+        if let Ok(user) = update_res {
+            return Ok(user);
+        }
+
+        Err(ServiceError::internal())
     }
 }

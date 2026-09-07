@@ -1,5 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+use crate::{
+    models::user_model::{NewUser, UserModel},
+    service::user_service::UserService,
+};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AdditionalData {
     pub avatar: Option<String>,
@@ -12,6 +18,29 @@ pub struct AuthUpdateUserPayload {
     pub email: Option<String>,
     pub password: Option<String>,
     pub data: AdditionalData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct UpdateProfilePayload {
+    #[validate(email(message = "Please enter a valid email"))]
+    pub email: String,
+    #[validate(length(min = 3, max = 128, message = "User name must be 3-128 characters"))]
+    pub display_name: String,
+    #[validate(length(min = 3, max = 128, message = "Invalid avatar URL"))]
+    pub avatar: String,
+}
+
+impl UpdateProfilePayload {
+    pub fn to_update_user_payload(self) -> AuthUpdateUserPayload {
+        AuthUpdateUserPayload {
+            email: Some(self.email),
+            password: None,
+            data: AdditionalData {
+                avatar: Some(self.avatar),
+                display_name: Some(self.display_name),
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,6 +61,27 @@ pub struct UpdateUserResult {
     pub identities: Vec<Identity>,
 }
 
+impl UpdateUserResult {
+    pub fn to_new_user_payload(self, current_user: UserModel) -> NewUser {
+        let display_name = self
+            .user_metadata
+            .display_name
+            .unwrap_or(current_user.display_name);
+        let new_avatar = UserService::generate_avatar(&display_name);
+        NewUser {
+            id: self.id,
+            email: self.user_metadata.email,
+            display_name,
+            role: current_user.role,
+            avatar: Some(
+                self.user_metadata
+                    .avatar
+                    .unwrap_or(current_user.avatar.unwrap_or(new_avatar)),
+            ),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppMetadata {
     pub provider: String,
@@ -40,7 +90,8 @@ pub struct AppMetadata {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserMetadata {
-    pub display_name: String,
+    pub display_name: Option<String>,
+    pub avatar: Option<String>,
     pub email: String,
     pub email_verified: bool,
     pub phone_verified: bool,

@@ -7,6 +7,7 @@ use validator::Validate;
 use crate::{
     constants::ADMIN_ROLES,
     models::auth_model::{AuthPayload, AuthToken},
+    utils::CommonUtility,
 };
 
 #[derive(Clone, Debug, Queryable, Selectable, Serialize, Deserialize)]
@@ -34,18 +35,32 @@ impl UserModel {
             updated_at: Utc::now(),
         }
     }
-}
 
-impl UserModel {
     pub fn is_authorize_as_admins(&self) -> bool {
         ADMIN_ROLES.contains(&self.role.as_str())
     }
-}
 
-impl UserModel {
     pub fn to_payload(self, token: AuthToken) -> AuthPayload {
         let user = self;
         AuthPayload { token, user }
+    }
+
+    pub fn is_superadmin(&self) -> bool {
+        &self.role == "superadmin"
+    }
+
+    pub fn fix_avatar_url(self) -> Self {
+        Self {
+            id: self.id,
+            email: self.email,
+            display_name: self.display_name,
+            role: self.role,
+            avatar: Some(CommonUtility::generate_media_url(
+                self.avatar.unwrap_or("".to_string()),
+            )),
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+        }
     }
 }
 

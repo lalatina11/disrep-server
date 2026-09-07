@@ -12,6 +12,7 @@ use crate::{
             AuthPayload, AuthToken, RefreshTokenPayload, SignInPayload, SignUpAdditionalData,
             SignUpPayload,
         },
+        auth_update_user_model::{AuthUpdateUserPayload, UpdateProfilePayload},
         user_model::UserModel,
     },
     service::{supabase_service::SupabaseService, user_service::UserService},
@@ -192,5 +193,41 @@ impl AuthService {
 
     pub async fn sign_out(access_token: String) -> Result<(), ServiceError> {
         SupabaseService::sign_out(access_token).await
+    }
+
+    pub async fn update_profile(
+        user: UserModel,
+        payload: AuthUpdateUserPayload,
+    ) -> Result<UserModel, ServiceError> {
+        let cloned_current_user = UserModel {
+            id: user.id,
+            display_name: user.display_name.clone(),
+            email: user.email.clone(),
+            role: user.role.clone(),
+            avatar: user.avatar.clone(),
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+        };
+        let email = payload.email.unwrap_or(user.email);
+        let avatar = payload.data.avatar.unwrap_or(
+            user.avatar
+                .unwrap_or(UserService::generate_avatar(&user.display_name)),
+        );
+        let display_name = payload.data.display_name.unwrap_or(user.display_name);
+        let update_profile_payload = UpdateProfilePayload {
+            email,
+            display_name,
+            avatar,
+        };
+        let update_profile_res =
+            SupabaseService::update_user(update_profile_payload.to_update_user_payload()).await?;
+
+        let update_user_res = UserService::update_user(
+            user.id,
+            update_profile_res.to_new_user_payload(cloned_current_user),
+        )
+        .await?;
+
+        Ok(update_user_res)
     }
 }

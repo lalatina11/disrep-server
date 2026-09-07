@@ -15,7 +15,7 @@ impl AuthMiddleware {
                 ApiResponse::<bool>::error(Some(status.to_string()), Some(status)).into_response()
             }
             Ok(data) => {
-                req.extensions_mut().insert(data);
+                req.extensions_mut().insert(data.fix_avatar_url());
                 next.run(req).await.into_response()
             }
         }
@@ -24,7 +24,7 @@ impl AuthMiddleware {
     pub async fn optional(mut req: Request, next: Next) -> impl IntoResponse {
         let user_payload = AuthService::get_user(req.headers()).await;
         if let Ok(data) = user_payload {
-            req.extensions_mut().insert(data);
+            req.extensions_mut().insert(data.fix_avatar_url());
         }
         next.run(req).await.into_response()
     }
