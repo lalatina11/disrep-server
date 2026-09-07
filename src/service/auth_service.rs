@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use validator::Validate;
 
-use axum::http::{HeaderMap, header as HeaderType};
 use uuid::Uuid;
 
 use crate::{
@@ -12,7 +11,9 @@ use crate::{
             AuthPayload, AuthToken, RefreshTokenPayload, SignInPayload, SignUpAdditionalData,
             SignUpPayload,
         },
-        auth_update_user_model::{AuthUpdateUserPayload, UpdateProfilePayload},
+        auth_update_user_model::{
+            AdditionalData, AuthUpdateUserPayload, UpdatePasswordPayload, UpdateProfilePayload,
+        },
         user_model::UserModel,
     },
     service::{supabase_service::SupabaseService, user_service::UserService},
@@ -101,13 +102,7 @@ impl AuthService {
         Err(ServiceError::internal())
     }
 
-    pub async fn get_user(headers: &HeaderMap) -> Result<UserModel, ServiceError> {
-        let token = headers
-            .get(HeaderType::AUTHORIZATION)
-            .and_then(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-            .unwrap_or("".to_string());
-
+    pub async fn get_user(token: String) -> Result<UserModel, ServiceError> {
         if token == "" {
             return Err(ServiceError {
                 message: "token are required".to_string(),
@@ -234,5 +229,32 @@ impl AuthService {
         Ok(update_user_res)
     }
 
-    pub async fn update_password() {}
+    pub async fn update_password(
+        token: String,
+        UpdatePasswordPayload {
+            current_password,
+            new_password,
+        }: UpdatePasswordPayload,
+    ) -> Result<(), ServiceError> {
+        let user = Self::get_user(token.clone()).await?;
+        let try_login = Self::sign_in(SignInPayload {
+            email: user.email,
+            password: current_password,
+        })
+        .await;
+        if let Err(_) = try_login {
+            return Err(ServiceError::unprocessable(Some(
+                "Invalid Password!".to_string(),
+            )));
+        }
+        let payload = AuthUpdateUserPayload {
+            password: Some(new_password),
+            data: AdditionalData {
+                avatar: None,
+                display_name: None,
+            },
+        };
+        SupabaseService::update_user(token, payload).await?;
+        Ok(())
+    }
 }

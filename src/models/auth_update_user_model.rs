@@ -119,3 +119,11 @@ pub struct Identity {
     pub updated_at: DateTime<Utc>,
     pub email: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct UpdatePasswordPayload {
+    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
+    pub current_password: String,
+    #[validate(length(min = 8, max = 32, message = "Password must between 8-32 characters"))]
+    pub new_password: String,
+}
