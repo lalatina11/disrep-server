@@ -8,6 +8,7 @@ use reqwest::StatusCode;
 use crate::{
     models::{
         auth_model::{AuthPayload, RefreshTokenPayload, SignInPayload, SignUpPayload},
+        auth_update_user_model::AuthUpdateUserPayload,
         user_model::UserModel,
     },
     service::auth_service::AuthService,
@@ -166,5 +167,20 @@ impl AuthHandler {
                 data: None,
             }),
         )
+    }
+
+    pub async fn update_profile(
+        Extension(user): Extension<UserModel>,
+        JsonParser(payload): JsonParser<AuthUpdateUserPayload>,
+    ) -> ApiResponseReturnTypeWithHeader<UserModel> {
+        let service = AuthService::update_profile(user, payload).await;
+        match service {
+            Ok(data) => ApiResponse::success(
+                Some(data),
+                Some("Success to edit profile".to_string()),
+                None,
+            ),
+            Err(err) => err.to_handler_error(),
+        }
     }
 }
