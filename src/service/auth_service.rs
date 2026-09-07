@@ -261,7 +261,8 @@ impl AuthService {
             let res = SupabaseService::update_user(token, payload).await;
             return match res {
                 Ok(_) => {
-                    Self::sign_out(login_data.token.access_token).await?;
+                    let token = format!("Bearer {}", login_data.token.access_token);
+                    Self::sign_out(token).await?;
                     Ok(())
                 }
                 Err(err) => Err(err),

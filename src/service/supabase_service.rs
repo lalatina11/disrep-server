@@ -100,7 +100,7 @@ impl SupabaseService {
         let supabase_config = SupabaseConfig::new();
         let fetch = Client::new();
         let url = format!("{}/auth/v1/logout", supabase_config.project_url);
-        let res = fetch
+        fetch
             .post(url)
             .header(HeaderType::CONTENT_TYPE, "application/json")
             .header("apikey", supabase_config.publishable_key)
@@ -112,10 +112,7 @@ impl SupabaseService {
                 ServiceError::internal()
             })?;
 
-        if res.status().is_success() {
-            return Ok(());
-        }
-        Err(ServiceError::internal())
+        Ok(())
     }
 
     pub async fn get_user(token: String) -> Result<String, ServiceError> {
@@ -252,10 +249,13 @@ impl SupabaseService {
             })?;
         match serde_json::from_str::<UpdateUserResult>(&res) {
             Ok(data) => Ok(data),
-            Err(_) => match serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-                Ok(err) => Err(err.to_service_error()),
-                Err(_) => Err(ServiceError::internal()),
-            },
+            Err(err) => {
+                println!("{}", err);
+                match serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
+                    Ok(err) => Err(err.to_service_error()),
+                    Err(_) => Err(ServiceError::internal()),
+                }
+            }
         }
     }
 }
