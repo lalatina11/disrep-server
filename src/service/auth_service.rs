@@ -247,14 +247,26 @@ impl AuthService {
                 "Invalid Password!".to_string(),
             )));
         }
-        let payload = AuthUpdateUserPayload {
-            password: Some(new_password),
-            data: AdditionalData {
-                avatar: None,
-                display_name: None,
-            },
-        };
-        SupabaseService::update_user(token, payload).await?;
-        Ok(())
+        if let Ok(login_data) = try_login {
+            let payload =
+                AuthUpdateUserPayload {
+                    password: Some(new_password),
+                    data: AdditionalData {
+                        avatar: Some(login_data.user.avatar.unwrap_or(
+                            UserService::generate_avatar(&login_data.user.display_name),
+                        )),
+                        display_name: Some(login_data.user.display_name),
+                    },
+                };
+            let res = SupabaseService::update_user(token, payload).await;
+            return match res {
+                Ok(_) => {
+                    Self::sign_out(login_data.token.access_token).await?;
+                    Ok(())
+                }
+                Err(err) => Err(err),
+            };
+        }
+        Err(ServiceError::internal())
     }
 }
