@@ -15,15 +15,12 @@ pub struct AdditionalData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 
 pub struct AuthUpdateUserPayload {
-    pub email: Option<String>,
     pub password: Option<String>,
     pub data: AdditionalData,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct UpdateProfilePayload {
-    #[validate(email(message = "Please enter a valid email"))]
-    pub email: String,
     #[validate(length(min = 3, max = 128, message = "User name must be 3-128 characters"))]
     pub display_name: String,
     #[validate(length(min = 3, max = 128, message = "Invalid avatar URL"))]
@@ -33,7 +30,6 @@ pub struct UpdateProfilePayload {
 impl UpdateProfilePayload {
     pub fn to_update_user_payload(self) -> AuthUpdateUserPayload {
         AuthUpdateUserPayload {
-            email: Some(self.email),
             password: None,
             data: AdditionalData {
                 avatar: Some(self.avatar),

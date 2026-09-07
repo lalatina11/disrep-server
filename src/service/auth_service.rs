@@ -209,14 +209,12 @@ impl AuthService {
             created_at: user.created_at,
             updated_at: user.updated_at,
         };
-        let email = payload.email.unwrap_or(user.email);
         let avatar = payload.data.avatar.unwrap_or(
             user.avatar
                 .unwrap_or(UserService::generate_avatar(&user.display_name)),
         );
         let display_name = payload.data.display_name.unwrap_or(user.display_name);
         let update_profile_payload = UpdateProfilePayload {
-            email,
             display_name,
             avatar,
         };
