@@ -249,13 +249,10 @@ impl SupabaseService {
             })?;
         match serde_json::from_str::<UpdateUserResult>(&res) {
             Ok(data) => Ok(data),
-            Err(err) => {
-                println!("{}", err);
-                match serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
-                    Ok(err) => Err(err.to_service_error()),
-                    Err(_) => Err(ServiceError::internal()),
-                }
-            }
+            Err(_) => match serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
+                Ok(err) => Err(err.to_service_error()),
+                Err(_) => Err(ServiceError::internal()),
+            },
         }
     }
 }

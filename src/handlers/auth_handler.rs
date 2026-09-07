@@ -8,7 +8,7 @@ use reqwest::StatusCode;
 use crate::{
     models::{
         auth_model::{AuthPayload, RefreshTokenPayload, SignInPayload, SignUpPayload},
-        auth_update_user_model::{AuthUpdateUserPayload, UpdatePasswordPayload},
+        auth_update_user_model::{UpdatePasswordPayload, UpdateProfilePayload},
         user_model::UserModel,
     },
     service::auth_service::AuthService,
@@ -173,14 +173,9 @@ impl AuthHandler {
     pub async fn update_profile(
         headers: HeaderMap,
         Extension(user): Extension<UserModel>,
-        JsonParser(payload): JsonParser<AuthUpdateUserPayload>,
+        JsonParser(payload): JsonParser<UpdateProfilePayload>,
     ) -> ApiResponseReturnTypeWithHeader<UserModel> {
-        let token = headers
-            .get(HeaderType::AUTHORIZATION)
-            .and_then(|v| v.to_str().ok())
-            .map(|s| s.to_string())
-            .unwrap_or("".to_string());
-
+        let token = CommonUtility::get_access_token_from_headers(&headers);
         let service = AuthService::update_profile(token, user, payload).await;
         match service {
             Ok(data) => ApiResponse::success(

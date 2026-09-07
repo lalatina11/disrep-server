@@ -193,8 +193,16 @@ impl AuthService {
     pub async fn update_profile(
         token: String,
         user: UserModel,
-        payload: AuthUpdateUserPayload,
+        payload: UpdateProfilePayload,
     ) -> Result<UserModel, ServiceError> {
+        if token.is_empty() {
+            return Err(ServiceError::unauthorized(Some(
+                "token are required".to_string(),
+            )));
+        }
+
+        payload.validate()?;
+
         let cloned_current_user = UserModel {
             id: user.id,
             display_name: user.display_name.clone(),
@@ -204,20 +212,11 @@ impl AuthService {
             created_at: user.created_at,
             updated_at: user.updated_at,
         };
-        let avatar = payload.data.avatar.unwrap_or(
-            user.avatar
-                .unwrap_or(UserService::generate_avatar(&user.display_name)),
-        );
-        let display_name = payload.data.display_name.unwrap_or(user.display_name);
-        let update_profile_payload = UpdateProfilePayload {
-            display_name,
-            avatar,
-        };
 
-        update_profile_payload.validate()?;
+        let supabase_payload = payload.to_supabase_payload(&user);
 
         let update_profile_res =
-            SupabaseService::update_user(token, update_profile_payload.to_update_user_payload())
+            SupabaseService::update_user(token, supabase_payload)
                 .await?;
 
         let update_user_res = UserService::update_user(

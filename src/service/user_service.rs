@@ -64,6 +64,7 @@ impl UserService {
                 users::display_name.eq(payload.display_name),
                 users::email.eq(payload.email),
                 users::avatar.eq(payload.avatar),
+                users::updated_at.eq(chrono::Utc::now()),
             ))
             .returning(UserModel::as_returning())
             .get_result(conn);
