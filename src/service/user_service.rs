@@ -69,7 +69,7 @@ impl UserService {
             .get_result(conn);
 
         if let Ok(user) = update_res {
-            return Ok(user);
+            return Ok(user.fix_avatar_url());
         }
 
         Err(ServiceError::internal())
