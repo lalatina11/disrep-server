@@ -2,9 +2,13 @@ use reqwest::{Client, header as HeaderType};
 
 use crate::{
     config::supabase_config::SupabaseConfig,
-    error::{ServiceError, supabase_error::SupabaseStorageErrorResponse},
+    error::{
+        ServiceError,
+        supabase_error::{SupabaseAuthErrorResponse, SupabaseStorageErrorResponse},
+    },
     models::{
         auth_model::{RefreshTokenPayload, SignInPayload, SignUpPayload},
+        auth_update_user_model::{AuthUpdateUserPayload, UpdateUserResult},
         form_data::FileFormData,
     },
     utils::{
@@ -218,6 +222,38 @@ impl SupabaseService {
                     },
                 }
             }
+        }
+    }
+
+    pub async fn update_user(
+        payload: AuthUpdateUserPayload,
+    ) -> Result<UpdateUserResult, ServiceError> {
+        let supabase_config = SupabaseConfig::new();
+        let fetch = Client::new();
+        let url = format!("{}/auth/v1/signup", supabase_config.project_url);
+        let res = fetch
+            .post(url)
+            .header(HeaderType::CONTENT_TYPE, "application/json")
+            .header("apikey", supabase_config.publishable_key)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|_| {
+                println!("Response error");
+                ServiceError::internal()
+            })?
+            .text()
+            .await
+            .map_err(|_| {
+                println!("Parsing text error");
+                ServiceError::internal()
+            })?;
+        match serde_json::from_str::<UpdateUserResult>(&res) {
+            Ok(data) => Ok(data),
+            Err(_) => match serde_json::from_str::<SupabaseAuthErrorResponse>(&res) {
+                Ok(err) => Err(err.to_service_error()),
+                Err(_) => Err(ServiceError::internal()),
+            },
         }
     }
 }

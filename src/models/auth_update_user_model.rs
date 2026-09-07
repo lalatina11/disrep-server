@@ -1,5 +1,20 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdditionalData {
+    pub avatar: Option<String>,
+    pub display_name: Option<String>,
+}
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+
+pub struct AuthUpdateUserPayload {
+    pub email: Option<String>,
+    pub password: Option<String>,
+    pub data: AdditionalData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateUserResult {
     pub id: uuid::Uuid,
     pub aud: String,
@@ -17,11 +32,13 @@ pub struct UpdateUserResult {
     pub identities: Vec<Identity>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppMetadata {
     pub provider: String,
     pub providers: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserMetadata {
     pub display_name: String,
     pub email: String,
@@ -31,6 +48,7 @@ pub struct UserMetadata {
     pub sub: uuid::Uuid,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IdentityData {
     pub display_name: String,
     pub email: String,
@@ -39,6 +57,8 @@ pub struct IdentityData {
     pub role: String,
     pub sub: uuid::Uuid,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 
 pub struct Identity {
     pub identity_id: uuid::Uuid,
